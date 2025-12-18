@@ -1,0 +1,37 @@
+{
+    "listeners": [
+        {
+            "address": "0.0.0.0",
+            "port": 39002,
+            "https": false
+        }
+    ],
+    "app": {
+        "number_of_threads": 0,
+        "max_connection": 10000,
+        "log": {
+            "logfile_base_name": "",
+            "log_size_limit": 100000000,
+            "log_level": "DEBUG",
+            "display_local_time": false
+        },
+        "run_as_daemon": false,
+        "handle_sig_term": true,
+        "relaunch_on_error": false,
+        "idle_connection_timeout": 60,
+        "server_header_field": ""
+    },
+    "db_clients": [
+        {
+            "name": "porcodb",
+            "rdbms": "mysql",
+            "host": "103.23.149.25",
+            "port": 39000,
+            "dbname": "data0",
+            "user": "root",
+            "passwd": "123456",
+            "is_fast": false,
+            "connection_number": 5
+        }
+    ]
+}

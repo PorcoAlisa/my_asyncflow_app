@@ -1,0 +1,9 @@
+{
+    "rdbms": "mysql",
+    "host": "103.23.149.25",
+    "port": 39000,
+    "dbname": "data0",
+    "user": "root",
+    "passwd": "123456",
+    "tables": []
+}
