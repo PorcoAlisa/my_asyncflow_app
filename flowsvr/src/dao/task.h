@@ -8,16 +8,17 @@
 namespace async_flow {
 namespace db {
 
-enum TaskStatus { Pending, Processing, Succ, Failed };
+enum TaskStatus { PENDING, PROCESSING, SUCC, FAILED };
 
 class TaskDao : public Dao {
 public:
     TaskDao() {}
+
     drogon::Task<async_flow::frmwork::Status> CreateAsync(const std::string& taskType, const std::string& pos, drogon_model::data0::TLarkTask1& task);
-    std::string GetTableName(const std::string& taskType, const std::string& pos);
-    std::string GenTaskID(const std::string& taskType, const std::string& pos);
+    drogon::Task<async_flow::frmwork::Status> GetTaskListAsync(const std::string& taskType, std::string& pos, const TaskStatus& status, int limit, std::vector<drogon_model::data0::TLarkTask1>& tasklist);
+    drogon::Task<async_flow::frmwork::Status> BatchSetStatusAsync(const std::vector<std::string>& taskIDList, const TaskStatus& status);
 private:
-    
+
 };
 
 }; // namespace db

@@ -98,3 +98,4 @@ Task<HttpResponsePtr> Handler<ReqProto, RspProto>::ProcessCoro(HttpRequestPtr re
 } // namespace async_flow
 
 void FillDBTaskModel(const api::TaskData& taskdata, drogon_model::data0::TLarkTask1& ttask);
+void FillPBTaskModel(const drogon_model::data0::TLarkTask1& ttask, api::TaskData& taskdata);

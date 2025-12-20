@@ -1,6 +1,11 @@
 #include "hold_task.h"
+#include "dao.h"
+#include "task.h"
+#include "schedule_pos.h"
 
 using namespace async_flow::frmwork;
+using namespace async_flow::flowsvr;
+using namespace async_flow::db;
 
 
 const int32_t HoldTasksHandler::MAX_TASK_LIST_LIMIT = 1000;
@@ -35,5 +40,28 @@ Task<Status> HoldTasksHandler::HandleProcess(std::shared_ptr<api::HoldTasksReq>&
         co_return Status::FAIL;
     }
     std::string beginSchPos = std::to_string(schPos.getValueOfScheduleBeginPos());
+    std::vector<drogon_model::data0::TLarkTask1> vecTasks;
+    status = co_await taskDao.GetTaskListAsync(taskType, beginSchPos, PENDING, limit, vecTasks);
+    if (!status.ok()) {
+        co_return Status::FAIL;
+    }
+
+    std::vector<std::string> taskIDs;
+    for (auto& task : vecTasks) {
+        if (task.getValueOfCrtRetryNum() != 0 && task.getValueOfMaxRetryInterval() != 0 
+            && task.getValueOfOrderTime() > TimestampNow()) {
+            continue;
+        }
+        taskIDs.push_back(task.getValueOfTaskId());
+        api::TaskData* taskData = rspBody.add_task_list();
+        FillPBTaskModel(task, *taskData);
+    }
+
+    status = co_await taskDao.BatchSetStatusAsync(taskIDs, PROCESSING);
+    if (!status.ok()) {
+        LOG_INFO << "BatchSetStatus: " << status.error_code();
+        co_return status;
+    }
+
     co_return Status::OK;
 }

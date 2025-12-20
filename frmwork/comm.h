@@ -23,8 +23,9 @@ std::string Sprintf(const std::string& format, Args... args) {
     return std::string(buf.get(), buf.get() + size - 1);
 }
 
-void ReplaceString(std::string& subject, const std::string& search, const std::string& replace);
+std::string ReplaceString(std::string_view subject, std::string_view search, std::string_view replace);
+std::vector<std::string_view> StringSplit(std::string_view s, const char delim);
+std::string StringJoin(const std::vector<std::string>& v, const char c);
 
 std::string generate_uuid_v4();
-
 uint32_t TimestampNow();
