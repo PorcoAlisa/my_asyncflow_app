@@ -98,8 +98,6 @@ drogon::Task<async_flow::frmwork::Status> TaskDao::GetTaskListAsync(const std::s
     co_return Status::OK;
 }
 
-
-
 drogon::Task<async_flow::frmwork::Status> TaskDao::BatchSetStatusAsync(const std::vector<std::string>& taskIDList, const TaskStatus& status) {
     if (taskIDList.empty()) {
         co_return Status::OK;
@@ -123,6 +121,26 @@ drogon::Task<async_flow::frmwork::Status> TaskDao::BatchSetStatusAsync(const std
     co_return Status::OK;
 }
 
+drogon::Task<async_flow::frmwork::Status> TaskDao::SaveAsync(const drogon_model::data0::TLarkTask1& task) {
+    auto [taskType, pos] = GetTablePosFromTaskID(task.getValueOfTaskId());
+    if (taskType.empty() || pos.empty()) co_return InputInvalid;
+    std::string tableName = GetTableName(taskType, pos);
+
+    try {
+        auto result = co_await clientPtr_->execSqlCoro(
+            "update " + tableName + "set user_id = ?, task_type = ?, task_stage = ?, status = ?, priority = ?, crt_retry_num = ?, "
+            "max_retry_num = ?, max_retry_interval = ?, schedule_log = ?, task_context = ?, order_time = ? "
+            "where task_id = ?",
+            task.getValueOfUserId(), task.getValueOfTaskType(), task.getValueOfTaskStage(), task.getValueOfStatus(),
+            task.getValueOfPriority(), task.getValueOfCrtRetryNum(), task.getValueOfMaxRetryNum(), task.getValueOfMaxRetryInterval(),
+            task.getValueOfScheduleLog(), task.getValueOfTaskContext(), task.getValueOfOrderTime(), task.getValueOfTaskId()
+        );
+        LOG_INFO << "update task " << result.size() << " rows affected";
+    } catch (const DrogonDbException& e) {
+        LOG_FATAL << "error:" << e.base().what();
+    }
+    co_return Status::OK;
+}
 
 }; // namespace db
 }; // namespace async_flow

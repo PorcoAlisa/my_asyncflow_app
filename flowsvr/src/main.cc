@@ -5,6 +5,7 @@
 #include "ctrl.h"
 #include "create_task.h"
 #include "hold_tasks.h"
+#include "set_task.h"
 
 #include <iostream>
 
@@ -15,6 +16,7 @@ int main() {
     std::srand(std::time(nullptr));
     RegisterHandler<CreateTaskHandler>(app(), "/create_task");
     RegisterHandler<HoldTasksHandler>(app(), "/hold_tasks");
+    RegisterHandler<SetTaskHandler>(app(), "/set_task");
     drogon::app().loadConfigFile("./flowsvr/config/config.json").run();
     return 0;
 }
