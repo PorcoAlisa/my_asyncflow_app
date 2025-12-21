@@ -128,7 +128,7 @@ drogon::Task<async_flow::frmwork::Status> TaskDao::SaveAsync(const drogon_model:
 
     try {
         auto result = co_await clientPtr_->execSqlCoro(
-            "update " + tableName + "set user_id = ?, task_type = ?, task_stage = ?, status = ?, priority = ?, crt_retry_num = ?, "
+            "update " + tableName + " set user_id = ?, task_type = ?, task_stage = ?, status = ?, priority = ?, crt_retry_num = ?, "
             "max_retry_num = ?, max_retry_interval = ?, schedule_log = ?, task_context = ?, order_time = ? "
             "where task_id = ?",
             task.getValueOfUserId(), task.getValueOfTaskType(), task.getValueOfTaskStage(), task.getValueOfStatus(),
@@ -138,6 +138,7 @@ drogon::Task<async_flow::frmwork::Status> TaskDao::SaveAsync(const drogon_model:
         LOG_INFO << "update task " << result.size() << " rows affected";
     } catch (const DrogonDbException& e) {
         LOG_FATAL << "error:" << e.base().what();
+        co_return DBExecErr;
     }
     co_return Status::OK;
 }

@@ -6,10 +6,10 @@
 namespace async_flow {
 namespace frmwork {
 
-const Status InputInvalid;
-const Status JsonMarshalErr;
-const Status DBExecErr;
-const Status ResourceNotFound;
+extern const Status InputInvalid;
+extern const Status JsonMarshalErr;
+extern const Status DBExecErr;
+extern const Status ResourceNotFound;
 
 enum Code {
   SUCCESS = 1,
@@ -50,5 +50,5 @@ static std::map<Code, std::string> ErrMsg = {
     {ERR_GET_TASK_CFG_FROM_DB, "get task cfg failed"},
 };
 
-}; // namespace frmwork
-}; // namespace async_flow
+} // namespace frmwork
+} // namespace async_flow

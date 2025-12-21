@@ -4,6 +4,9 @@
 #include "schedule_pos.h"
 #include "schedule_cfg.h"
 
+namespace async_flow {
+namespace flowsvr {
+
 using namespace async_flow::flowsvr;
 using namespace async_flow::frmwork;
 using namespace async_flow::db;
@@ -46,3 +49,6 @@ Task<async_flow::frmwork::Status> CreateTaskHandler::HandleProcess(std::shared_p
     rspBody.set_task_id(task.getValueOfTaskId());
     co_return Status::OK;
 }
+
+} // flowsvr
+} // async_flow

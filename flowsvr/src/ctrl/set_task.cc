@@ -2,6 +2,10 @@
 #include "dao.h"
 #include "task.h"
 
+
+namespace async_flow {
+namespace flowsvr {
+
 using namespace async_flow::frmwork;
 using namespace async_flow::flowsvr;
 using namespace async_flow::db;
@@ -38,3 +42,6 @@ Task<async_flow::frmwork::Status> SetTaskHandler::HandleProcess(std::shared_ptr<
     }
     co_return Status::OK;
 }
+
+} // flowsvr
+} // async_flow
