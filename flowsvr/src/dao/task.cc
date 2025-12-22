@@ -3,13 +3,12 @@
 #include "comm.h"
 #include "const.h"
 
-using namespace async_flow::db;
+namespace async_flow {
+namespace db {
+
 using namespace async_flow::frmwork;
 using namespace drogon::orm;
 using TLarkTask1 = drogon_model::data0::TLarkTask1;
-
-namespace async_flow {
-namespace db {
 
 std::string GetTableName(std::string_view taskType, std::string_view pos) {
     // return Sprintf("t_%s_task_%s", taskType.c_str(), pos.c_str());
@@ -143,5 +142,5 @@ drogon::Task<async_flow::frmwork::Status> TaskDao::SaveAsync(const drogon_model:
     co_return Status::OK;
 }
 
-}; // namespace db
-}; // namespace async_flow
+} // namespace db
+} // namespace async_flow

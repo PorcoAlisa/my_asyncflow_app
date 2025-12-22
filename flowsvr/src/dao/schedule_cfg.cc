@@ -1,7 +1,9 @@
 #include "schedule_cfg.h"
 #include "const.h"
 
-using namespace async_flow::db;
+namespace async_flow {
+namespace db {
+
 using namespace async_flow::frmwork;
 using namespace drogon::orm;
 
@@ -57,3 +59,7 @@ Status ScheduleCfgDao::GetList(std::vector<TScheduleCfg>& cfgs) {
     }
     return Status::OK;
 }
+
+
+} // namespace db
+} // namespace async_flow

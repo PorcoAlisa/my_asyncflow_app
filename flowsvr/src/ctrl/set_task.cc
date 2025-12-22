@@ -7,8 +7,8 @@ namespace async_flow {
 namespace flowsvr {
 
 using namespace async_flow::frmwork;
-using namespace async_flow::flowsvr;
 using namespace async_flow::db;
+
 using TLarkTask1 = drogon_model::data0::TLarkTask1;
 
 Task<async_flow::frmwork::Status> SetTaskHandler::HandleInput(std::shared_ptr<api::SetTaskReq>& reqBody) {

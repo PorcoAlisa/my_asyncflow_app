@@ -16,5 +16,5 @@ public:
     async_flow::frmwork::Status GetList(std::vector<drogon_model::data0::TScheduleCfg>& cfg);
 };
 
-}; // namespace db
-}; // namespace async_flow
+} // namespace db
+} // namespace async_flow

@@ -1,7 +1,9 @@
 #include "schedule_pos.h"
 #include "const.h"
 
-using namespace async_flow::db;
+namespace async_flow {
+namespace db {
+
 using namespace async_flow::frmwork;
 using namespace drogon::orm;
 
@@ -81,3 +83,6 @@ Status SchedulePosDao::GetPosList(std::vector<TSchedulePos>& vec) {
     }
     return Status::OK;
 }
+
+} // namespace db
+} // namespace async_flow

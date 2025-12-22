@@ -1,5 +1,10 @@
 # CMakeLists.txt
 cmake_minimum_required(VERSION 3.16)
+
+set(CMAKE_C_COMPILER "gcc-13")
+set(CMAKE_CXX_COMPILER "g++-13")
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 project(hello_drogon LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -49,3 +54,22 @@ target_include_directories(flowsvr PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/flowsvr/src/dao
 )
 target_link_libraries(flowsvr PUBLIC drogon proto)
+
+file(GLOB WORKER_SRC
+  "worker/src/*.cc"
+  "worker/src/sdk/*.cc"
+  "worker/src/tasks/lark/*.cc"
+)
+
+add_executable(worker
+  ${WORKER_SRC}
+  ${FRMWORK_SRC}
+)
+target_include_directories(worker PUBLIC
+  ${CMAKE_CURRENT_SOURCE_DIR}/frmwork
+  ${CMAKE_CURRENT_SOURCE_DIR}/frmwork/http
+  ${CMAKE_CURRENT_SOURCE_DIR}/frmwork/const
+  ${CMAKE_CURRENT_SOURCE_DIR}/worker/src/sdk
+  ${CMAKE_CURRENT_SOURCE_DIR}/worker/src/tasks/lark
+)
+target_link_libraries(worker PUBLIC drogon proto)

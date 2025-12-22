@@ -22,6 +22,6 @@ private:
 
 };
 
-}; // namespace db
-}; // namespace async_flow
+} // namespace db
+} // namespace async_flow
 

@@ -7,9 +7,6 @@
 namespace async_flow {
 namespace db {
 
-// using namespace drogon_model::data0;
-// using namespace async_flow::frmwork;
-
 using TSchedulePos = drogon_model::data0::TSchedulePos;
 
 class SchedulePosDao : public Dao {
@@ -24,5 +21,5 @@ public:
     async_flow::frmwork::Status GetPosList(std::vector<drogon_model::data0::TSchedulePos>& vec);
 };
 
-}; // namespace db
-}; // namespace async_flow
+} // namespace db
+} // namespace async_flow
