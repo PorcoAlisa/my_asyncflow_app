@@ -78,8 +78,8 @@ void row2Task(drogon_model::data0::TLarkTask1& task, const drogon::orm::Row& r) 
 }
 
 drogon::Task<async_flow::frmwork::Status> TaskDao::GetTaskListAsync(const std::string& taskType, std::string& pos, const TaskStatus& status, int limit, std::vector<drogon_model::data0::TLarkTask1>& tasklist) {
+    std::string tableName = GetTableName(taskType, pos);
     try {
-        std::string tableName = GetTableName(taskType, pos);
         auto result = co_await clientPtr_->execSqlCoro(
             "select * from " + tableName + " where task_type = ? and status = ? order by order_time desc limit " + std::to_string(limit), taskType, status);
         if (result.empty()) {
