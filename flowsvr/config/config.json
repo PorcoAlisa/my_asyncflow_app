@@ -25,7 +25,7 @@
         {
             "name": "porcodb",
             "rdbms": "mysql",
-            "host": "103.23.149.25",
+            "host": "127.0.0.1",
             "port": 39000,
             "dbname": "data0",
             "user": "root",
