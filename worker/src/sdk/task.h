@@ -27,23 +27,36 @@ private:
     }
     template<class ReqBody, class RspBody>
     drogon::Task<std::pair<RspBody, async_flow::frmwork::Status>> SendRequest(const std::string& url, const ReqBody& reqBody) {
+        RspBody rspBody; // 默认构造
         std::string stReqBody;
-        ProtobufUtil::MessageToJsonString(reqBody, &stReqBody);
+        if (!ProtobufUtil::MessageToJsonString(reqBody, &stReqBody).ok()) {
+            LOG_ERROR << "Protobuf serialization failed";
+            co_return {rspBody, frmwork::Status::FAIL};
+        }
+
         auto req = drogon::HttpRequest::newHttpRequest();
         req->setMethod(drogon::Post);
         req->setPath(url);
-        req->setBody(stReqBody);
-        RspBody rspBody;
+        req->setBody(std::move(stReqBody));
+
         try {
             auto response = co_await client_->sendRequestCoro(req);
-            if (!ProtobufUtil::JsonStringToMessage(std::string(response->getBody().data()), &rspBody).ok()) {
-                co_return {rspBody, frmwork::Status(rspBody.code(), rspBody.msg())};
+            if (response->getStatusCode() != drogon::k200OK) {
+                LOG_ERROR << "HTTP error: " << response->getStatusCode();
+                co_return {rspBody, frmwork::Status::FAIL};
             }
+
+            auto bodyView = response->getBody();
+            std::string bodyStr(bodyView.data(), bodyView.length());
+            if (!ProtobufUtil::JsonStringToMessage(bodyStr, &rspBody).ok()) {
+                LOG_ERROR << "JSON parsing failed. Body: " << bodyStr;
+                co_return {rspBody, frmwork::Status::FAIL};
+            }
+            co_return {rspBody, frmwork::Status::OK};
         } catch (const std::exception& e) {
             LOG_ERROR << "Network or General error: " << e.what();
             co_return {rspBody, frmwork::Status::FAIL};
         }
-        co_return {rspBody, frmwork::Status::OK};
     }
 
 private:
