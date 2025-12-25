@@ -1,0 +1,11 @@
+{
+    "plugins": [
+        {
+            "name": "TaskRpc",
+            "dependencies": [],
+            "config": {
+                "host": "http://127.0.0.1:39002"
+            }
+        }
+    ]
+}

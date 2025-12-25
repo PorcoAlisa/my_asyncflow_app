@@ -3,6 +3,7 @@
 #include <string>
 #include <string_view>
 #include "task.h"
+#include <thread>
 
 namespace async_flow {
 namespace worker {
@@ -16,6 +17,7 @@ private:
     std::string taskType_;
     std::string taskSvrHost_;
     TaskBaseFactory factory_;
+    std::jthread loadCfgJt_;
 };
 
 }
