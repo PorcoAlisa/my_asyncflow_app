@@ -4,6 +4,7 @@
 #include <string_view>
 #include "task.h"
 #include <thread>
+#include "api.pb.h"
 
 namespace async_flow {
 namespace worker {
@@ -17,7 +18,8 @@ private:
     std::string taskType_;
     std::string taskSvrHost_;
     TaskBaseFactory factory_;
-    std::jthread loadCfgJt_;
+    // std::jthread loadCfgJt_;
+    std::map<std::string, api::TaskScheduleCfg> cfgMap_;
 };
 
 }

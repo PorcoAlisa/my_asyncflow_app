@@ -5,6 +5,7 @@
 #include "comm.h"
 #include <functional>
 #include <drogon/drogon.h>
+#include <ctime>
 
 namespace async_flow {
 namespace worker {
@@ -17,14 +18,27 @@ public:
     drogon::Task<std::pair<api::CreateTaskRsp, frmwork::Status>> CreateTask(const api::CreateTaskReq& req);
 private:
     void initAndStart(const Json::Value &config) override {
+        std::srand(static_cast<unsigned int>(std::time(nullptr)));
         host_ = config.get("host", "http://127.0.0.1:39002").asString();
-        client_ = drogon::HttpClient::newHttpClient(host_);
-        client_->setPipeliningDepth(10);
-        LOG_INFO << "TaskRpc initialized with host: " << host_;
+        size_t threadNum = drogon::app().getThreadNum();
+        LOG_INFO << "Init and Start: threadNum: " << threadNum;
+        if (threadNum == 0) threadNum = 1;
+        clients_.reserve(threadNum);
+
+        for (size_t i = 0; i < threadNum; ++i) {
+            trantor::EventLoop* loop = drogon::app().getIOLoop(i);
+            drogon::HttpClientPtr client = drogon::HttpClient::newHttpClient(host_, loop);
+            client->setPipeliningDepth(10);
+            clients_.push_back(client);
+
+            LOG_INFO << "TaskRpc initialized with " << clients_.size() << " clients.";
+        }
     }
+
     void shutdown() override {
         LOG_INFO << "TaskRpc Shutting down";
     }
+
     template<class ReqBody, class RspBody>
     drogon::Task<std::pair<RspBody, async_flow::frmwork::Status>> SendRequest(const std::string& url, const ReqBody& reqBody) {
         RspBody rspBody; // 默认构造
@@ -40,7 +54,8 @@ private:
         req->setBody(std::move(stReqBody));
 
         try {
-            auto response = co_await client_->sendRequestCoro(req);
+            auto client = getRandomClient();
+            auto response = co_await client->sendRequestCoro(req);
             if (response->getStatusCode() != drogon::k200OK) {
                 LOG_ERROR << "HTTP error: " << response->getStatusCode();
                 co_return {rspBody, frmwork::Status::FAIL};
@@ -60,7 +75,14 @@ private:
     }
 
 private:
-    drogon::HttpClientPtr client_;
+    drogon::HttpClientPtr getRandomClient() {
+        if (clients_.empty()) return nullptr;
+        size_t idx = std::rand() % clients_.size();
+        return clients_[idx];
+    }
+
+private:
+    std::vector<drogon::HttpClientPtr> clients_;
     std::string host_;
 };
 
