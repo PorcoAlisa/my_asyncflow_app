@@ -4,7 +4,7 @@
 namespace async_flow {
 namespace db {
 
-using namespace async_flow::frmwork;
+using namespace frmwork;
 using namespace drogon::orm;
 
 using TScheduleCfg = drogon_model::data0::TScheduleCfg;
@@ -49,15 +49,15 @@ drogon::Task<Status> ScheduleCfgDao::GetAsync(const std::string& taskType, TSche
     co_return Status::OK;
 }
 
-Status ScheduleCfgDao::GetList(std::vector<TScheduleCfg>& cfgs) {
+drogon::Task<std::pair<std::vector<TScheduleCfg>, Status>> ScheduleCfgDao::GetListAsync() {
     try {
-        Mapper<TScheduleCfg> mp(clientPtr_);
-        cfgs = mp.findAll();
+        CoroMapper<TScheduleCfg> mp(clientPtr_);
+        std::vector<TScheduleCfg> cfgs = co_await mp.findAll();
+        co_return {std::move(cfgs), Status::OK};
     } catch (const DrogonDbException& e) {
         LOG_FATAL << "error: " << e.base().what();
-        return DBExecErr;
+        co_return {{}, DBExecErr};
     }
-    return Status::OK;
 }
 
 

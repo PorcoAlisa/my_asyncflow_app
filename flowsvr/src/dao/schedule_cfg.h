@@ -13,7 +13,7 @@ public:
     async_flow::frmwork::Status Create(drogon_model::data0::TScheduleCfg& cfg);
     async_flow::frmwork::Status Save(drogon_model::data0::TScheduleCfg& cfg);
     drogon::Task<async_flow::frmwork::Status> GetAsync(const std::string& taskType, drogon_model::data0::TScheduleCfg& cfg);
-    async_flow::frmwork::Status GetList(std::vector<drogon_model::data0::TScheduleCfg>& cfg);
+    drogon::Task<std::pair<std::vector<drogon_model::data0::TScheduleCfg>, async_flow::frmwork::Status>> GetListAsync();
 };
 
 } // namespace db
