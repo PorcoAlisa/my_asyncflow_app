@@ -32,21 +32,20 @@ Status ScheduleCfgDao::Save(TScheduleCfg& cfg) {
     return Status::OK;
 }
 
-drogon::Task<Status> ScheduleCfgDao::GetAsync(const std::string& taskType, TScheduleCfg& pos) {
+drogon::Task<std::pair<TScheduleCfg, Status>> ScheduleCfgDao::GetAsync(const std::string& taskType) {
     try {
         CoroMapper<TScheduleCfg> mp(clientPtr_);
         auto tasks = co_await mp.limit(1).findBy(Criteria(TScheduleCfg::Cols::_task_type, CompareOperator::EQ, taskType));
         if (tasks.empty()) {
             LOG_FATAL << "error tasks size = 0";
-            co_return ResourceNotFound;
+            co_return {{}, ResourceNotFound};
         } else {
-            pos = tasks[0];
+            co_return {std::move(tasks[0]), Status::OK};
         }
     } catch (const DrogonDbException& e) {
         LOG_FATAL << "error: " << e.base().what();
-        co_return DBExecErr;
+        co_return {{}, DBExecErr};
     }
-    co_return Status::OK;
 }
 
 drogon::Task<std::pair<std::vector<TScheduleCfg>, Status>> ScheduleCfgDao::GetListAsync() {

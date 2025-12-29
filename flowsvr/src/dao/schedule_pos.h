@@ -14,7 +14,7 @@ public:
     SchedulePosDao() {}
     async_flow::frmwork::Status Create(drogon_model::data0::TSchedulePos& pos);
     async_flow::frmwork::Status Save(drogon_model::data0::TSchedulePos& pos);
-    drogon::Task<async_flow::frmwork::Status> GetAsync(const std::string& taskSetName, drogon_model::data0::TSchedulePos& pos);
+    drogon::Task<std::pair<drogon_model::data0::TSchedulePos, async_flow::frmwork::Status>> GetAsync(const std::string& taskSetName);
     drogon::Task<async_flow::frmwork::Status> GetRandomSchedulePosAsync(const std::string& taskSetName, int& pos);
     drogon::Task<async_flow::frmwork::Status> GetBeginSchedulePosAsync(const std::string& taskSetName, int& pos);
     async_flow::frmwork::Status GetNextPos(const std::string& pos, std::string& nextPos);

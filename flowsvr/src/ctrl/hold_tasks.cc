@@ -23,7 +23,6 @@ Task<Status> HoldTasksHandler::HandleInput(std::shared_ptr<api::HoldTasksReq>& r
 Task<Status> HoldTasksHandler::HandleProcess(std::shared_ptr<api::HoldTasksReq>& reqBody, api::HoldTasksRsp& rspBody) {
     TaskDao taskDao;
     SchedulePosDao posDao;
-    TSchedulePos schPos;
 
     int limit = reqBody->limit();
     if (limit > MAX_TASK_LIST_LIMIT) {
@@ -36,7 +35,7 @@ Task<Status> HoldTasksHandler::HandleProcess(std::shared_ptr<api::HoldTasksReq>&
     std::string taskType = reqBody->task_type();
     std::string taskTableName = GetTaskTableName(taskType);
 
-    Status status = co_await posDao.GetAsync(taskTableName, schPos);
+    auto [schPos, status] = co_await posDao.GetAsync(taskTableName);
     if (!status.ok()) {
         co_return Status::FAIL;
     }

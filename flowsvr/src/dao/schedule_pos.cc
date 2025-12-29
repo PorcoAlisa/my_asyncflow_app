@@ -31,25 +31,23 @@ Status SchedulePosDao::Save(TSchedulePos& pos) {
     return Status::OK;
 }
 
-drogon::Task<async_flow::frmwork::Status> SchedulePosDao::GetAsync(const std::string& taskSetName, TSchedulePos& pos) {
+drogon::Task<std::pair<TSchedulePos, Status>> SchedulePosDao::GetAsync(const std::string& taskSetName) {
     try {
         CoroMapper<TSchedulePos> mp(clientPtr_);
         auto tasks = co_await mp.limit(1).findBy(Criteria(TSchedulePos::Cols::_task_type, CompareOperator::EQ, taskSetName));
         if (tasks.empty()) {
-            co_return ResourceNotFound;
+            co_return {{}, ResourceNotFound};
         } else {
-            pos = tasks[0];
+            co_return {std::move(tasks[0]), Status::OK};
         }
     } catch (const DrogonDbException& e) {
         LOG_FATAL << "error:" << e.base().what();
-        co_return DBExecErr;
+        co_return {{}, DBExecErr};
     }
-    co_return Status::OK;
 }
 
 drogon::Task<Status> SchedulePosDao::GetRandomSchedulePosAsync(const std::string& taskSetName, int& pos) {
-    TSchedulePos taskPos;
-    Status status = co_await GetAsync(taskSetName, taskPos);
+    auto [taskPos, status] = co_await GetAsync(taskSetName);
     if (!status.ok()) {
         co_return status;
     }
@@ -59,8 +57,7 @@ drogon::Task<Status> SchedulePosDao::GetRandomSchedulePosAsync(const std::string
 }
 
 drogon::Task<Status> SchedulePosDao::GetBeginSchedulePosAsync(const std::string& taskSetName, int& pos) {
-    TSchedulePos taskPos;
-    Status status = co_await GetAsync(taskSetName, taskPos);
+    auto [taskPos, status] = co_await GetAsync(taskSetName);
     if (!status.ok()) {
         co_return status;
     }
