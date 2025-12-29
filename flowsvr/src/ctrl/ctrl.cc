@@ -26,3 +26,14 @@ void FillPBTaskModel(const TLarkTask1& ttask, api::TaskData& taskdata) {
     taskdata.set_task_context(ttask.getValueOfTaskContext());
     taskdata.set_order_time(ttask.getValueOfOrderTime());
 }
+
+void FillDBScheduleCfgModel(const drogon_model::data0::TScheduleCfg& tcfg, api::TaskScheduleCfg& cfg) {
+    cfg.set_task_type(tcfg.getValueOfTaskType());
+    cfg.set_schedule_limit(tcfg.getValueOfScheduleLimit());
+    cfg.set_schedule_interval(tcfg.getValueOfScheduleInterval());
+    cfg.set_max_processing_time(tcfg.getValueOfMaxProcessingTime());
+    cfg.set_max_retry_num(tcfg.getValueOfMaxRetryNum());
+    cfg.set_max_retry_interval(tcfg.getValueOfRetryInterval());
+    cfg.set_create_time(tcfg.getValueOfCreateTime().toFormattedString(false));
+    cfg.set_modify_time(tcfg.getValueOfModifyTime().toFormattedString(false));
+}

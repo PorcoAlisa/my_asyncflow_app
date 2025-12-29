@@ -6,6 +6,7 @@
 #include "api.pb.h"
 #include "TLarkTask1.h"
 #include "const.h"
+#include "TScheduleCfg.h"
 
 
 namespace async_flow {
@@ -97,3 +98,4 @@ Task<HttpResponsePtr> Handler<ReqProto, RspProto>::ProcessCoro(HttpRequestPtr re
 
 void FillDBTaskModel(const api::TaskData& taskdata, drogon_model::data0::TLarkTask1& ttask);
 void FillPBTaskModel(const drogon_model::data0::TLarkTask1& ttask, api::TaskData& taskdata);
+void FillDBScheduleCfgModel(const drogon_model::data0::TScheduleCfg& tcfg, api::TaskScheduleCfg& cfg);
