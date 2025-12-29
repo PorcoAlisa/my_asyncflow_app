@@ -41,8 +41,11 @@ void TaskMgr::Init() {
     LOG_INFO << "TaskMgr Init";
 
     auto self = shared_from_this();
-    drogon::async_run([self]() -> drogon::Task<void> {
-        return self->LoadCfgLoop();
+    drogon::app().registerBeginningAdvice([self]() {
+        LOG_INFO << "App running, now starting LoadCfgLoop...";
+        drogon::async_run([self]() -> drogon::Task<void> {
+            return self->LoadCfgLoop();
+        });
     });
 }
 
