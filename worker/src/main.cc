@@ -17,9 +17,9 @@ int main() {
         taskType = config["app_settings"].get("type", taskType).asString();
         taskHost = config["app_settings"].get("host", taskHost).asString();
     }
-    TaskMgr mgr(taskType, taskHost);
+    auto mgr = std::make_shared<TaskMgr>(taskType, taskHost);
 
-    mgr.Init();
+    mgr->Init();
 
     drogon::app().run();
 }
