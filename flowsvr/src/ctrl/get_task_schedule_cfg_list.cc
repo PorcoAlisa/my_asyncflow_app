@@ -10,8 +10,8 @@ Task<async_flow::frmwork::Status> GetTaskScheduleCfgListHandler::HandleInput(std
     co_return Status::OK;
 }
 
-Task<async_flow::frmwork::Status> GetTaskScheduleCfgListHandler::HandleProcess(std::shared_ptr<api::GetTaskScheduleCfgListReq>& reqBody, api::GetTaskScheduleCfgListRsp& rspBody) {
-    co_return Status::OK;
+Task<std::pair<api::GetTaskScheduleCfgListRsp, Status>> GetTaskScheduleCfgListHandler::HandleProcess(std::shared_ptr<api::GetTaskScheduleCfgListReq>& reqBody) {
+    co_return {{}, Status::OK};
 }
 
 }

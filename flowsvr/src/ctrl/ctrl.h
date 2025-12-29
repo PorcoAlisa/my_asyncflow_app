@@ -26,7 +26,7 @@ public:
     virtual ~Handler() = default;
 
     virtual Task<async_flow::frmwork::Status> HandleInput(std::shared_ptr<ReqProto>&) = 0;
-    virtual Task<async_flow::frmwork::Status> HandleProcess(std::shared_ptr<ReqProto>&, RspProto&) = 0;
+    virtual Task<std::pair<RspProto, async_flow::frmwork::Status>> HandleProcess(std::shared_ptr<ReqProto>&) = 0;
 
     HttpResponsePtr Reply(int code, const std::string& msg, RspProto& rsp);
     HttpResponsePtr ReplySucc(RspProto& rsp);
@@ -65,28 +65,26 @@ Task<HttpResponsePtr> Handler<ReqProto, RspProto>::ProcessCoro(HttpRequestPtr re
     std::shared_ptr<ReqProto> reqPtr = std::make_shared<ReqProto>();
     
     // JSON 解析
-    ProtobufUtil::Status status = ProtobufUtil::JsonStringToMessage(reqHTTP->bodyData(), reqPtr.get());
-    if (!status.ok()) {
+    ProtobufUtil::Status status1 = ProtobufUtil::JsonStringToMessage(reqHTTP->bodyData(), reqPtr.get());
+    if (!status1.ok()) {
         RspProto rsp;
         // 【修改点】：以前是 callback(...)，现在直接 co_return
         co_return self->ReplyFail(async_flow::frmwork::InputInvalid, rsp);
     }
 
-    RspProto rspBody;
-    async_flow::frmwork::Status flowStatus;
-
     // 1. HandleInput
-    flowStatus = co_await self->HandleInput(reqPtr);
-    if (!flowStatus.ok()) {
+    auto status2 = co_await self->HandleInput(reqPtr);
+    if (!status2.ok()) {
+        RspProto failedRspBody;
         // 【修改点】：直接 co_return
-        co_return self->ReplyFail(flowStatus, rspBody);
+        co_return self->ReplyFail(status2, failedRspBody);
     }
     
     // 2. HandleProcess
-    flowStatus = co_await self->HandleProcess(reqPtr, rspBody);
-    if (!flowStatus.ok()) {
+    auto [rspBody, status3] = co_await self->HandleProcess(reqPtr);
+    if (!status3.ok()) {
         // 【修改点】：直接 co_return
-        co_return self->ReplyFail(flowStatus, rspBody);
+        co_return self->ReplyFail(status3, rspBody);
     }
 
     // 3. 成功

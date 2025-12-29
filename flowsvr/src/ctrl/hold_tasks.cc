@@ -20,7 +20,7 @@ Task<Status> HoldTasksHandler::HandleInput(std::shared_ptr<api::HoldTasksReq>& r
     co_return Status::OK;
 }
 
-Task<Status> HoldTasksHandler::HandleProcess(std::shared_ptr<api::HoldTasksReq>& reqBody, api::HoldTasksRsp& rspBody) {
+Task<std::pair<api::HoldTasksRsp, Status>> HoldTasksHandler::HandleProcess(std::shared_ptr<api::HoldTasksReq>& reqBody) {
     TaskDao taskDao;
     SchedulePosDao posDao;
 
@@ -37,15 +37,16 @@ Task<Status> HoldTasksHandler::HandleProcess(std::shared_ptr<api::HoldTasksReq>&
 
     auto [schPos, status] = co_await posDao.GetAsync(taskTableName);
     if (!status.ok()) {
-        co_return Status::FAIL;
+        co_return {{}, Status::FAIL};
     }
     std::string beginSchPos = std::to_string(schPos.getValueOfScheduleBeginPos());
     std::vector<drogon_model::data0::TLarkTask1> vecTasks;
     status = co_await taskDao.GetTaskListAsync(taskType, beginSchPos, PENDING, limit, vecTasks);
     if (!status.ok()) {
-        co_return Status::FAIL;
+        co_return {{}, Status::FAIL};
     }
 
+    api::HoldTasksRsp rspBody;
     std::vector<std::string> taskIDs;
     for (auto& task : vecTasks) {
         if (task.getValueOfCrtRetryNum() != 0 && task.getValueOfMaxRetryInterval() != 0 
@@ -60,10 +61,10 @@ Task<Status> HoldTasksHandler::HandleProcess(std::shared_ptr<api::HoldTasksReq>&
     status = co_await taskDao.BatchSetStatusAsync(taskIDs, PROCESSING);
     if (!status.ok()) {
         LOG_INFO << "BatchSetStatus: " << status.error_code();
-        co_return status;
+        co_return {rspBody, status};
     }
 
-    co_return Status::OK;
+    co_return {rspBody, Status::OK};
 }
 
 } // flowsvr

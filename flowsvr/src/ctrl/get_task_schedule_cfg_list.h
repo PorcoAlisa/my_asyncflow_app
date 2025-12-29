@@ -9,7 +9,7 @@ namespace flowsvr {
 class GetTaskScheduleCfgListHandler : public Handler<api::GetTaskScheduleCfgListReq, api::GetTaskScheduleCfgListRsp> {
 public:
     virtual Task<async_flow::frmwork::Status> HandleInput(std::shared_ptr<api::GetTaskScheduleCfgListReq>& reqBody) override;
-    virtual Task<async_flow::frmwork::Status> HandleProcess(std::shared_ptr<api::GetTaskScheduleCfgListReq>& reqBody, api::GetTaskScheduleCfgListRsp& rspBody) override;
+    virtual Task<std::pair<api::GetTaskScheduleCfgListRsp, async_flow::frmwork::Status>> HandleProcess(std::shared_ptr<api::GetTaskScheduleCfgListReq>& reqBody) override;
 };
 
 }

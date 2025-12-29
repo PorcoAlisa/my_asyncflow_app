@@ -7,10 +7,10 @@
 namespace async_flow {
 namespace flowsvr {
 
-using namespace async_flow::frmwork;
-using namespace async_flow::db;
+using namespace frmwork;
+using namespace db;
 
-Task<async_flow::frmwork::Status> CreateTaskHandler::HandleInput(std::shared_ptr<api::CreateTaskReq>& reqBody) {
+Task<Status> CreateTaskHandler::HandleInput(std::shared_ptr<api::CreateTaskReq>& reqBody) {
     if (reqBody->taskdata().task_type().empty()) {
         LOG_ERROR << "task type is empty";
         co_return Status::FAIL;
@@ -18,7 +18,7 @@ Task<async_flow::frmwork::Status> CreateTaskHandler::HandleInput(std::shared_ptr
     co_return Status::OK;
 }
 
-Task<async_flow::frmwork::Status> CreateTaskHandler::HandleProcess(std::shared_ptr<api::CreateTaskReq>& reqBody, api::CreateTaskRsp& rspBody) {
+Task<std::pair<api::CreateTaskRsp, Status>> CreateTaskHandler::HandleProcess(std::shared_ptr<api::CreateTaskReq>& reqBody) {
     TaskDao taskDao;
     SchedulePosDao posDao;
     ScheduleCfgDao cfgDao;
@@ -29,11 +29,11 @@ Task<async_flow::frmwork::Status> CreateTaskHandler::HandleProcess(std::shared_p
     std::string taskTableName = GetTaskTableName(taskType);
 
     auto [schPos, status1] = co_await posDao.GetAsync(taskTableName);
-    if (!status1.ok()) co_return Status::FAIL;
+    if (!status1.ok()) co_return {{}, Status::FAIL};
 
     std::string schPosStr = std::to_string(schPos.getValueOfScheduleEndPos());
     auto [schCfg, status2] = co_await cfgDao.GetAsync(taskType);
-    if (!status2.ok()) co_return Status::FAIL;
+    if (!status2.ok()) co_return {{}, Status::FAIL};
 
     reqBody->mutable_taskdata()->set_max_retry_num(schCfg.getValueOfMaxRetryNum());
     reqBody->mutable_taskdata()->set_max_retry_interval(schCfg.getValueOfRetryInterval());
@@ -41,10 +41,11 @@ Task<async_flow::frmwork::Status> CreateTaskHandler::HandleProcess(std::shared_p
 
     FillDBTaskModel(reqBody->taskdata(), task);
     Status status3 = co_await taskDao.CreateAsync(taskType, schPosStr, task);
-    if (!status3.ok()) co_return status3;
+    if (!status3.ok()) co_return {{}, status3};
 
+    api::CreateTaskRsp rspBody;
     rspBody.set_task_id(task.getValueOfTaskId());
-    co_return Status::OK;
+    co_return { std::move(rspBody), Status::OK};
 }
 
 } // flowsvr

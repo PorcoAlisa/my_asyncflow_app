@@ -6,8 +6,8 @@
 namespace async_flow {
 namespace flowsvr {
 
-using namespace async_flow::frmwork;
-using namespace async_flow::db;
+using namespace frmwork;
+using namespace db;
 
 using TLarkTask1 = drogon_model::data0::TLarkTask1;
 
@@ -19,7 +19,7 @@ Task<async_flow::frmwork::Status> SetTaskHandler::HandleInput(std::shared_ptr<ap
     co_return Status::OK;
 }
 
-Task<async_flow::frmwork::Status> SetTaskHandler::HandleProcess(std::shared_ptr<api::SetTaskReq>& reqBody, api::SetTaskRsp& rspBody) {
+Task<std::pair<api::SetTaskRsp, Status>> SetTaskHandler::HandleProcess(std::shared_ptr<api::SetTaskReq>& reqBody) {
     if (reqBody->order_time() == 0) reqBody->set_order_time(TimestampNow());
 
     TLarkTask1 task;
@@ -38,9 +38,9 @@ Task<async_flow::frmwork::Status> SetTaskHandler::HandleProcess(std::shared_ptr<
     TaskDao taskDao;
     Status status = co_await taskDao.SaveAsync(task);
     if (!status.ok()) {
-        co_return status;
+        co_return {{}, status};
     }
-    co_return Status::OK;
+    co_return {{}, Status::OK};
 }
 
 } // flowsvr
