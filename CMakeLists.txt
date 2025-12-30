@@ -20,6 +20,10 @@ if(NOT EXISTS ${CPM_DOWNLOAD_LOCATION})
 endif()
 include(${CPM_DOWNLOAD_LOCATION})
 
+find_program(CCACHE_PROGRAM ccache)
+if(CCACHE_PROGRAM)
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCACHE_PROGRAM}")
+endif()
 
 # Make CPM available
 include(cmake/CPM.cmake)
@@ -53,7 +57,7 @@ target_include_directories(flowsvr PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/flowsvr/src/model
   ${CMAKE_CURRENT_SOURCE_DIR}/flowsvr/src/dao
 )
-target_link_libraries(flowsvr PUBLIC drogon proto)
+target_link_libraries(flowsvr PRIVATE drogon proto)
 
 file(GLOB WORKER_SRC
   "worker/src/*.cc"
@@ -72,4 +76,4 @@ target_include_directories(worker PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/worker/src/sdk
   ${CMAKE_CURRENT_SOURCE_DIR}/worker/src/tasks/lark
 )
-target_link_libraries(worker PUBLIC drogon proto)
+target_link_libraries(worker PRIVATE drogon proto)
