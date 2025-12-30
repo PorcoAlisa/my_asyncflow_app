@@ -16,6 +16,7 @@ public:
     void Init();
     void Schedule();
     drogon::Task<std::vector<TaskPtr>> Hold(const api::TaskScheduleCfg& cfg);
+    drogon::Task<void> RunTask(const api::TaskScheduleCfg& cfg, TaskPtr taskPtr);
 private:
     std::string taskType_;
     std::string taskSvrHost_;

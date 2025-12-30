@@ -48,6 +48,43 @@ void TaskMgr::Init() {
 
 void TaskMgr::Schedule() {
     LOG_INFO << "begin to Schedule";
+    auto self = shared_from_this();
+    drogon::app().registerBeginningAdvice([self]() {
+        drogon::async_run([self]() -> drogon::Task<void> {
+            api::TaskScheduleCfg scheduleCfg;
+            {
+                std::lock_guard<std::mutex> guard(self->lock_);
+                auto it = self->cfgMap_.find(self->taskType_);
+                if (it != self->cfgMap_.end()) {
+                    scheduleCfg = it->second;
+                } else {
+                    LOG_ERROR << "Task type " << self->taskType_ << " not found in cfgMap_";
+                    co_return;
+                }
+            }
+            std::vector<TaskPtr> tasks = co_await self->Hold(scheduleCfg);
+
+            size_t numLoops = drogon::app().getThreadNum();
+            if (numLoops == 0) numLoops = 1;
+
+            LOG_INFO << "Dispatching " << tasks.size() << " tasks to " << numLoops << " threads.";
+
+            for (size_t i = 0; i < tasks.size(); ++i) {
+                trantor::EventLoop* targetLoop = drogon::app().getIOLoop(i % numLoops);
+                if (!targetLoop) targetLoop = drogon::app().getLoop();
+
+                TaskPtr currentTask = tasks[i];
+
+                targetLoop->queueInLoop([self, currentTask, targetLoop, scheduleCfg]() -> drogon::Task<void> {
+                    return self->RunTask(scheduleCfg, currentTask);
+                });
+            }
+        });
+    });
+}
+
+drogon::Task<void> TaskMgr::RunTask(const api::TaskScheduleCfg& cfg, TaskPtr taskPtr) {
+    co_return;
 }
 
 drogon::Task<std::vector<TaskPtr>> TaskMgr::Hold(const api::TaskScheduleCfg& cfg) {
