@@ -42,10 +42,12 @@ void TaskMgr::Init() {
     auto self = shared_from_this();
     drogon::app().registerBeginningAdvice([self]() {
         LOG_INFO << "App running, now starting LoadCfgLoop...";
-        drogon::async_run([self]() -> drogon::Task<void> {
-            return self->LoadCfgLoop();
-        });
+        drogon::async_run([self]() -> drogon::Task<void> { return self->LoadCfgLoop(); });
     });
+}
+
+void TaskMgr::Schedule() {
+    LOG_INFO << "begin to Schedule";
 }
 
 drogon::Task<std::vector<TaskPtr>> TaskMgr::Hold(const api::TaskScheduleCfg& cfg) {

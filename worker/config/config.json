@@ -1,4 +1,8 @@
 {
+    "app": {
+        "threads_num": 0, 
+        "log": { "log_level": "DEBUG" }
+    },
     "app_settings": {
         "type": "lark",
         "host": "http://127.0.0.1:39002"

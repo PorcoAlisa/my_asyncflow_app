@@ -14,6 +14,7 @@ public:
     TaskMgr(std::string_view taskType, std::string_view host)
         : taskType_(taskType), taskSvrHost_(host) {}
     void Init();
+    void Schedule();
     drogon::Task<std::vector<TaskPtr>> Hold(const api::TaskScheduleCfg& cfg);
 private:
     std::string taskType_;
