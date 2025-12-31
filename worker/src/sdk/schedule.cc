@@ -75,8 +75,10 @@ void TaskMgr::Schedule() {
 
                 TaskPtr currentTask = tasks[i];
 
-                targetLoop->queueInLoop([self, currentTask, targetLoop, scheduleCfg]() -> drogon::Task<void> {
-                    return self->RunTask(scheduleCfg, currentTask);
+                targetLoop->queueInLoop([self, currentTask, scheduleCfg]() {
+                    drogon::async_run([self, currentTask, scheduleCfg]() -> drogon::Task<void> {
+                        return self->RunTask(scheduleCfg, currentTask);
+                    });
                 });
             }
         });
