@@ -5,7 +5,8 @@
 namespace async_flow {
 namespace frmwork {
 
-enum error { OK, FAILED };
+enum TaskStatus { TASK_PENDING, TASK_PROCESSING, TASK_SUCC, TASK_FAILED };
+enum Error { OK, FAILED };
 
 class Status {
 public:
@@ -22,7 +23,7 @@ public:
         error_message_ = msg;
     }
 
-    bool ok() const { return error_code_ == error::OK; }
+    bool ok() const { return error_code_ == Error::OK; }
     int error_code() const { return error_code_; }
     std::string error_message() const { return error_message_; }
 

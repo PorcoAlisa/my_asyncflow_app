@@ -41,7 +41,7 @@ Task<std::pair<api::HoldTasksRsp, Status>> HoldTasksHandler::HandleProcess(std::
     }
     std::string beginSchPos = std::to_string(schPos.getValueOfScheduleBeginPos());
     std::vector<drogon_model::data0::TLarkTask1> vecTasks;
-    status = co_await taskDao.GetTaskListAsync(taskType, beginSchPos, PENDING, limit, vecTasks);
+    status = co_await taskDao.GetTaskListAsync(taskType, beginSchPos, TASK_PENDING, limit, vecTasks);
     if (!status.ok()) {
         co_return {{}, Status::FAIL};
     }
@@ -58,7 +58,7 @@ Task<std::pair<api::HoldTasksRsp, Status>> HoldTasksHandler::HandleProcess(std::
         FillPBTaskModel(task, *taskData);
     }
 
-    status = co_await taskDao.BatchSetStatusAsync(taskIDs, PROCESSING);
+    status = co_await taskDao.BatchSetStatusAsync(taskIDs, TASK_PROCESSING);
     if (!status.ok()) {
         LOG_INFO << "BatchSetStatus: " << status.error_code();
         co_return {rspBody, status};

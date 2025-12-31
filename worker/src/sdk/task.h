@@ -91,6 +91,13 @@ public:
     TaskBase() {}
     TaskBase(const api::TaskData& taskData, std::string_view host) : taskData_(taskData), svr_host_(host) {}
     virtual ~TaskBase() = default;
+    virtual drogon::Task<frmwork::Status> ContextLoad() { co_return frmwork::Status::OK; }
+    virtual drogon::Task<frmwork::Status> HandleProcess() { co_return frmwork::Status::OK; }
+    virtual drogon::Task<frmwork::Status> HandleFailedMust() { co_return frmwork::Status::OK; }
+    virtual drogon::Task<frmwork::Status> HandleFinishError() { co_return frmwork::Status::OK; }
+    virtual drogon::Task<void> HandleFinish() { co_return; }
+    virtual drogon::Task<frmwork::Status> SetTask();
+    api::TaskData& TaskData() { return taskData_; }
 protected:
     api::TaskData taskData_;
     std::string svr_host_;

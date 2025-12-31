@@ -85,8 +85,57 @@ void TaskMgr::Schedule() {
     });
 }
 
+drogon::Task<void> EndProcess(api::TaskData& taskData, const TaskPtr& taskPtr) {
+    if (taskData.status() == TASK_FAILED) {
+        Status status = co_await taskPtr->HandleFailedMust();
+        if (!status.ok()) {
+            taskData.set_status(TASK_PROCESSING);
+            LOG_ERROR << "HandleFailedMust error" << status.error_code();
+            co_return;
+        }
+        
+        status = co_await taskPtr->HandleFinishError();
+        if (!status.ok()) {
+            LOG_ERROR << "HandleFinishError error" << status.error_code();
+            co_return;
+        }
+    }
+    if (taskData.status() == TASK_FAILED || taskData.status() == TASK_SUCC) {
+        co_await taskPtr->HandleFinish();
+    }
+    Status status = co_await taskPtr->SetTask();
+    if (!status.ok()) {
+        co_await taskPtr->HandleFinish();
+    }
+    co_await taskPtr->SetTask();
+}
+
 drogon::Task<void> TaskMgr::RunTask(const api::TaskScheduleCfg& cfg, TaskPtr taskPtr) {
-    co_return;
+    api::TaskData& taskData = taskPtr->TaskData();
+    Status status = co_await taskPtr->ContextLoad();
+    if (!status.ok()) {
+        LOG_ERROR << "context load error " << status.error_code();
+        co_await EndProcess(taskData, taskPtr);
+    }
+    status = co_await taskPtr->HandleProcess();
+
+    if (taskData.status() == TASK_PROCESSING) {
+        taskData.set_status(TASK_PENDING);
+    }
+    if (!status.ok()) {
+        // 下面这里其实有风险，一个uint32_t + int32_t，然后被转换成int32_t传入set_order_time，有截断风险
+        // 我查了一下目前的时间，到2038年的时候，int32就不够用了
+        taskData.set_order_time(TimestampNow() + cfg.max_retry_interval());
+        if (taskData.max_retry_num() == 0 || taskData.crt_retry_num() >= taskData.max_retry_num()) {
+            taskData.set_status(TASK_FAILED);
+            co_await EndProcess(taskData, taskPtr);
+        }
+        if (taskData.status() != TASK_FAILED) {
+            taskData.set_crt_retry_num(taskData.crt_retry_num() + 1);
+        }
+        LOG_ERROR << "HandleProcess error " << status.error_code();
+    }
+    co_await EndProcess(taskData, taskPtr);
 }
 
 drogon::Task<std::vector<TaskPtr>> TaskMgr::Hold(const api::TaskScheduleCfg& cfg) {
