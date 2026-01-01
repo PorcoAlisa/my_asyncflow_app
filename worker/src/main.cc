@@ -1,10 +1,7 @@
 #include "schedule.h"
 #include "task.h"
-#include <thread>
-#include "lark.h"
 
 using namespace async_flow::worker;
-// using namespace async_flow::frmwork;
 
 int main() {
     drogon::app().loadConfigFile("./worker/config/config.json");

@@ -2,8 +2,7 @@
 
 #include "task.h"
 
-namespace async_flow {
-namespace worker {
+namespace async_flow::worker {
 
 class Lark : public TaskBase {
 public:
@@ -12,5 +11,4 @@ public:
     static TaskPtr CreateLark(const api::TaskData& data, std::string_view host);
 };
 
-}
 }
