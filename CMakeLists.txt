@@ -10,7 +10,7 @@ project(hello_drogon LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(CPM_DOWNLOAD_VERSION 0.34.0)
+set(CPM_DOWNLOAD_VERSION 0.40.2)
 set(CPM_DOWNLOAD_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/cmake/CPM.cmake")
 if(NOT EXISTS ${CPM_DOWNLOAD_LOCATION})
   file(DOWNLOAD
@@ -24,9 +24,6 @@ find_program(CCACHE_PROGRAM ccache)
 if(CCACHE_PROGRAM)
     set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCACHE_PROGRAM}")
 endif()
-
-# Make CPM available
-include(cmake/CPM.cmake)
 
 # Pull Drogon via CPM
 CPMAddPackage(
@@ -49,7 +46,7 @@ add_executable(flowsvr
   ${FLOWSVR_SRC}
   ${FRMWORK_SRC}
 )
-target_include_directories(flowsvr PUBLIC 
+target_include_directories(flowsvr PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/frmwork
   ${CMAKE_CURRENT_SOURCE_DIR}/frmwork/http
   ${CMAKE_CURRENT_SOURCE_DIR}/frmwork/const
