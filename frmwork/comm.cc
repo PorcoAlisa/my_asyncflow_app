@@ -75,6 +75,6 @@ std::string generate_uuid_v4() {
 }
 
 uint32_t TimestampNow() {
-  unsigned long int sec = time(NULL);
+  const unsigned long int sec = time(nullptr);
   return sec;
 }

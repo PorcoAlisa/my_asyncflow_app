@@ -7,8 +7,7 @@
 #include <drogon/drogon.h>
 #include <ctime>
 
-namespace async_flow {
-namespace worker {
+namespace async_flow::worker {
 
 class TaskRpc : public drogon::Plugin<TaskRpc> {
 public:
@@ -88,8 +87,8 @@ private:
 
 class TaskBase {
 public:
-    TaskBase() {}
-    TaskBase(const api::TaskData& taskData, std::string_view host) : taskData_(taskData), svr_host_(host) {}
+    TaskBase() = default;
+    TaskBase(api::TaskData taskData, const std::string_view host) : taskData_(std::move(taskData)), svr_host_(host) {}
     virtual ~TaskBase() = default;
     virtual drogon::Task<frmwork::Status> ContextLoad() { co_return frmwork::Status::OK; }
     virtual drogon::Task<frmwork::Status> HandleProcess() { co_return frmwork::Status::OK; }
@@ -106,5 +105,4 @@ protected:
 using TaskPtr = std::shared_ptr<TaskBase>;
 using TaskBaseFactory = std::function<TaskPtr(const api::TaskData&, std::string_view)>;
 
-}
 }

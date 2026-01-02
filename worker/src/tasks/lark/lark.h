@@ -6,9 +6,9 @@ namespace async_flow::worker {
 
 class Lark : public TaskBase {
 public:
-    Lark(const api::TaskData& data, std::string_view host) : TaskBase(data, host) {}
+    Lark(api::TaskData data, std::string_view host) : TaskBase(std::move(data), host) {}
 
-    static TaskPtr CreateLark(const api::TaskData& data, std::string_view host);
+    static TaskPtr CreateLark(api::TaskData data, std::string_view host);
 };
 
 }

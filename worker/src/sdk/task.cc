@@ -1,7 +1,6 @@
 #include "task.h"
 
-namespace async_flow {
-namespace worker {
+namespace async_flow::worker {
 
 drogon::Task<std::pair<api::GetTaskScheduleCfgListRsp, frmwork::Status>> TaskRpc::GetTaskScheduleCfgList(const api::GetTaskScheduleCfgListReq& req) {
     co_return co_await SendRequest<api::GetTaskScheduleCfgListReq, api::GetTaskScheduleCfgListRsp>("/get_task_schedule_cfg_list", req);
@@ -44,5 +43,4 @@ drogon::Task<frmwork::Status> TaskBase::SetTask() {
     co_return frmwork::Status::OK;
 }
 
-}
 }

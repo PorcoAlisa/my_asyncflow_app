@@ -2,8 +2,7 @@
 #include <drogon/drogon.h>
 #include <trantor/net/EventLoop.h>
 
-namespace async_flow {
-namespace worker {
+namespace async_flow::worker {
 
 using namespace frmwork;
 
@@ -73,7 +72,7 @@ void TaskMgr::Schedule() {
                 trantor::EventLoop* targetLoop = drogon::app().getIOLoop(i % numLoops);
                 if (!targetLoop) targetLoop = drogon::app().getLoop();
 
-                TaskPtr currentTask = tasks[i];
+                const TaskPtr& currentTask = tasks[i];
 
                 targetLoop->queueInLoop([self, currentTask, scheduleCfg]() {
                     drogon::async_run([self, currentTask, scheduleCfg]() -> drogon::Task<void> {
@@ -103,14 +102,13 @@ drogon::Task<void> EndProcess(api::TaskData& taskData, const TaskPtr& taskPtr) {
     if (taskData.status() == TASK_FAILED || taskData.status() == TASK_SUCC) {
         co_await taskPtr->HandleFinish();
     }
-    Status status = co_await taskPtr->SetTask();
-    if (!status.ok()) {
+    if (const Status status = co_await taskPtr->SetTask(); !status.ok()) {
         co_await taskPtr->HandleFinish();
     }
     co_await taskPtr->SetTask();
 }
 
-drogon::Task<void> TaskMgr::RunTask(const api::TaskScheduleCfg& cfg, TaskPtr taskPtr) {
+drogon::Task<void> TaskMgr::RunTask(const api::TaskScheduleCfg& cfg, const TaskPtr& taskPtr) {
     api::TaskData& taskData = taskPtr->TaskData();
     Status status = co_await taskPtr->ContextLoad();
     if (!status.ok()) {
@@ -125,7 +123,7 @@ drogon::Task<void> TaskMgr::RunTask(const api::TaskScheduleCfg& cfg, TaskPtr tas
     if (!status.ok()) {
         // 下面这里其实有风险，一个uint32_t + int32_t，然后被转换成int32_t传入set_order_time，有截断风险
         // 我查了一下目前的时间，到2038年的时候，int32就不够用了
-        taskData.set_order_time(TimestampNow() + cfg.max_retry_interval());
+        taskData.set_order_time(static_cast<int32_t>(TimestampNow()) + cfg.max_retry_interval());
         if (taskData.max_retry_num() == 0 || taskData.crt_retry_num() >= taskData.max_retry_num()) {
             taskData.set_status(TASK_FAILED);
             co_await EndProcess(taskData, taskPtr);
@@ -160,11 +158,10 @@ drogon::Task<std::vector<TaskPtr>> TaskMgr::Hold(const api::TaskScheduleCfg& cfg
     }
     std::vector<TaskPtr> tasks;
     tasks.reserve(rsp.task_list_size());
-    for (size_t i = 0; i < rsp.task_list_size(); ++i) {
-        tasks.emplace_back(factory_(std::move(rsp.task_list(i)), taskSvrHost_));
+    for (int i = 0; i < rsp.task_list_size(); ++i) {
+        tasks.emplace_back(factory_(std::move(*rsp.mutable_task_list(i)), taskSvrHost_));
     }
     co_return tasks;
 }
 
-}
 }
