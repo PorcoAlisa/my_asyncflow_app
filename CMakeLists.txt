@@ -48,7 +48,6 @@ add_executable(flowsvr
 )
 target_include_directories(flowsvr PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/frmwork
-  ${CMAKE_CURRENT_SOURCE_DIR}/frmwork/http
   ${CMAKE_CURRENT_SOURCE_DIR}/frmwork/const
   ${CMAKE_CURRENT_SOURCE_DIR}/flowsvr/src/ctrl
   ${CMAKE_CURRENT_SOURCE_DIR}/flowsvr/src/model
@@ -68,7 +67,6 @@ add_executable(worker
 )
 target_include_directories(worker PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/frmwork
-  ${CMAKE_CURRENT_SOURCE_DIR}/frmwork/http
   ${CMAKE_CURRENT_SOURCE_DIR}/frmwork/const
   ${CMAKE_CURRENT_SOURCE_DIR}/worker/src/sdk
   ${CMAKE_CURRENT_SOURCE_DIR}/worker/src/tasks/lark

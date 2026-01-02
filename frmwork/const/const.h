@@ -3,8 +3,7 @@
 #include <map>
 #include "status.h"
 
-namespace async_flow {
-namespace frmwork {
+namespace async_flow::frmwork {
 
 extern const Status InputInvalid;
 extern const Status JsonMarshalErr;
@@ -50,5 +49,4 @@ static std::map<Code, std::string> ErrMsg = {
     {ERR_GET_TASK_CFG_FROM_DB, "get task cfg failed"},
 };
 
-} // namespace frmwork
-} // namespace async_flow
+}
