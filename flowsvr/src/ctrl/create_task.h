@@ -9,8 +9,8 @@ namespace flowsvr {
 
 class CreateTaskHandler : public Handler<api::CreateTaskReq, api::CreateTaskRsp> {
 public:
-    virtual Task<async_flow::frmwork::Status> HandleInput(std::shared_ptr<api::CreateTaskReq>& reqBody) override;
-    virtual Task<std::pair<api::CreateTaskRsp, async_flow::frmwork::Status>> HandleProcess(std::shared_ptr<api::CreateTaskReq>& reqBody) override;
+    virtual drogon::Task<async_flow::frmwork::Status> HandleInput(std::shared_ptr<api::CreateTaskReq>& reqBody) override;
+    virtual drogon::Task<std::pair<api::CreateTaskRsp, async_flow::frmwork::Status>> HandleProcess(std::shared_ptr<api::CreateTaskReq>& reqBody) override;
 };
 
 } // flowsvr

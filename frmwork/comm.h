@@ -3,9 +3,6 @@
 #include <random>
 #include <google/protobuf/util/json_util.h>
 
-namespace Protobuf = google::protobuf;
-namespace ProtobufUtil = google::protobuf::util;
-
 static std::random_device rd;
 static std::mt19937 gen(rd());
 static std::uniform_int_distribution<> dis(0, 15);

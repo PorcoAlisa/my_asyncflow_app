@@ -11,7 +11,6 @@ using namespace drogon::orm;
 using TLarkTask1 = drogon_model::data0::TLarkTask1;
 
 std::string GetTableName(std::string_view taskType, std::string_view pos) {
-    // return Sprintf("t_%s_task_%s", taskType.c_str(), pos.c_str());
     return std::format("t_{}_task_{}", taskType, pos);
 }
 

@@ -12,7 +12,7 @@ using namespace async_flow::db;
 const int32_t HoldTasksHandler::MAX_TASK_LIST_LIMIT = 1000;
 const int32_t HoldTasksHandler::DEFAULT_TASK_LIST_LIMIT = 1000;
 
-Task<Status> HoldTasksHandler::HandleInput(std::shared_ptr<api::HoldTasksReq>& reqBody) {
+drogon::Task<Status> HoldTasksHandler::HandleInput(std::shared_ptr<api::HoldTasksReq>& reqBody) {
     if (reqBody->task_type().empty()) {
         LOG_ERROR << "task type is empty";
         co_return InputInvalid;
@@ -20,7 +20,7 @@ Task<Status> HoldTasksHandler::HandleInput(std::shared_ptr<api::HoldTasksReq>& r
     co_return Status::OK;
 }
 
-Task<std::pair<api::HoldTasksRsp, Status>> HoldTasksHandler::HandleProcess(std::shared_ptr<api::HoldTasksReq>& reqBody) {
+drogon::Task<std::pair<api::HoldTasksRsp, Status>> HoldTasksHandler::HandleProcess(std::shared_ptr<api::HoldTasksReq>& reqBody) {
     TaskDao taskDao;
     SchedulePosDao posDao;
 

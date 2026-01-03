@@ -1,20 +1,22 @@
 #pragma once
 #include <string>
 #include <drogon/drogon.h>
-#include "handler_base.h"
 #include "status.h"
 #include "api.pb.h"
 #include "TLarkTask1.h"
 #include "const.h"
 #include "TScheduleCfg.h"
+#include "comm.h"
+#include <google/protobuf/util/json_util.h>
+#include <absl/status/status.h>
 
 
 namespace async_flow {
 namespace flowsvr {
 
 template <class handler_t>
-void RegisterHandler(HttpAppFramework& app, const std::string& path) {
-    app.registerHandler(path, [](HttpRequestPtr req) -> Task<HttpResponsePtr> {
+void RegisterHandler(drogon::HttpAppFramework& app, const std::string& path) {
+    app.registerHandler(path, [](drogon::HttpRequestPtr req) -> drogon::Task<drogon::HttpResponsePtr> {
         auto h = std::make_shared<handler_t>();
         co_return co_await h->ProcessCoro(req);
     });
@@ -26,47 +28,47 @@ class Handler : public std::enable_shared_from_this<Handler<ReqProto, RspProto>>
 public:
     virtual ~Handler() = default;
 
-    virtual Task<async_flow::frmwork::Status> HandleInput(std::shared_ptr<ReqProto>&) = 0;
-    virtual Task<std::pair<RspProto, async_flow::frmwork::Status>> HandleProcess(std::shared_ptr<ReqProto>&) = 0;
+    virtual drogon::Task<async_flow::frmwork::Status> HandleInput(std::shared_ptr<ReqProto>&) = 0;
+    virtual drogon::Task<std::pair<RspProto, async_flow::frmwork::Status>> HandleProcess(std::shared_ptr<ReqProto>&) = 0;
 
-    HttpResponsePtr Reply(int code, const std::string& msg, RspProto& rsp);
-    HttpResponsePtr ReplySucc(RspProto& rsp);
-    HttpResponsePtr ReplyFail(async_flow::frmwork::Status status, RspProto& rsp);
+    drogon::HttpResponsePtr Reply(int code, const std::string& msg, RspProto& rsp);
+    drogon::HttpResponsePtr ReplySucc(RspProto& rsp);
+    drogon::HttpResponsePtr ReplyFail(async_flow::frmwork::Status status, RspProto& rsp);
 
-    Task<HttpResponsePtr> ProcessCoro(HttpRequestPtr reqHTTP);
+    drogon::Task<drogon::HttpResponsePtr> ProcessCoro(drogon::HttpRequestPtr reqHTTP);
 };
 
 template<class ReqProto, class RspProto>
-HttpResponsePtr Handler<ReqProto, RspProto>::Reply(int code, const std::string& msg, RspProto& rsp) {
+drogon::HttpResponsePtr Handler<ReqProto, RspProto>::Reply(int code, const std::string& msg, RspProto& rsp) {
     rsp.set_code(code);
     rsp.set_msg(msg);
     std::string strReply;
-    ProtobufUtil::JsonPrintOptions opt;
-    opt.always_print_primitive_fields = true;
-    ProtobufUtil::Status status = ProtobufUtil::MessageToJsonString(rsp, &strReply, opt);
-    auto resp = HttpResponse::newHttpResponse();
+    google::protobuf::util::JsonPrintOptions opt;
+    opt.always_print_fields_with_no_presence = true;
+    absl::Status status = google::protobuf::util::MessageToJsonString(rsp, &strReply, opt);
+    auto resp = drogon::HttpResponse::newHttpResponse();
     resp->setBody(strReply);
-    resp->setStatusCode(k200OK);
+    resp->setStatusCode(drogon::k200OK);
     return resp;
 }
 
 template<class ReqProto, class RspProto>
-HttpResponsePtr Handler<ReqProto, RspProto>::ReplySucc(RspProto& rsp) {
+drogon::HttpResponsePtr Handler<ReqProto, RspProto>::ReplySucc(RspProto& rsp) {
     return Reply(async_flow::frmwork::Status::OK.error_code(), async_flow::frmwork::Status::OK.error_message(), rsp);
 }
 
 template<class ReqProto, class RspProto>
-HttpResponsePtr Handler<ReqProto, RspProto>::ReplyFail(async_flow::frmwork::Status status, RspProto& rsp) {
+drogon::HttpResponsePtr Handler<ReqProto, RspProto>::ReplyFail(async_flow::frmwork::Status status, RspProto& rsp) {
     return Reply(status.error_code(), status.error_message(), rsp);
 }
 
 template<class ReqProto, class RspProto>
-Task<HttpResponsePtr> Handler<ReqProto, RspProto>::ProcessCoro(HttpRequestPtr reqHTTP) {
+drogon::Task<drogon::HttpResponsePtr> Handler<ReqProto, RspProto>::ProcessCoro(drogon::HttpRequestPtr reqHTTP) {
     auto self = this->shared_from_this();
     std::shared_ptr<ReqProto> reqPtr = std::make_shared<ReqProto>();
     
     // JSON 解析
-    ProtobufUtil::Status status1 = ProtobufUtil::JsonStringToMessage(reqHTTP->bodyData(), reqPtr.get());
+    absl::Status status1 = google::protobuf::util::JsonStringToMessage(reqHTTP->bodyData(), reqPtr.get());
     if (!status1.ok()) {
         RspProto rsp;
         // 【修改点】：以前是 callback(...)，现在直接 co_return

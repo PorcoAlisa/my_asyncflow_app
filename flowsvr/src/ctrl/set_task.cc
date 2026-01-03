@@ -11,7 +11,7 @@ using namespace db;
 
 using TLarkTask1 = drogon_model::data0::TLarkTask1;
 
-Task<async_flow::frmwork::Status> SetTaskHandler::HandleInput(std::shared_ptr<api::SetTaskReq>& reqBody) {
+drogon::Task<async_flow::frmwork::Status> SetTaskHandler::HandleInput(std::shared_ptr<api::SetTaskReq>& reqBody) {
     if (reqBody->task_id().empty()) {
         LOG_ERROR << "task id is empty";
         co_return InputInvalid;
@@ -19,7 +19,7 @@ Task<async_flow::frmwork::Status> SetTaskHandler::HandleInput(std::shared_ptr<ap
     co_return Status::OK;
 }
 
-Task<std::pair<api::SetTaskRsp, Status>> SetTaskHandler::HandleProcess(std::shared_ptr<api::SetTaskReq>& reqBody) {
+drogon::Task<std::pair<api::SetTaskRsp, Status>> SetTaskHandler::HandleProcess(std::shared_ptr<api::SetTaskReq>& reqBody) {
     if (reqBody->order_time() == 0) reqBody->set_order_time(TimestampNow());
 
     TLarkTask1 task;

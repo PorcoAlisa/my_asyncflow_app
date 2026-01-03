@@ -8,11 +8,11 @@ namespace flowsvr {
 using namespace frmwork;
 using namespace db;
 
-Task<async_flow::frmwork::Status> GetTaskScheduleCfgListHandler::HandleInput(std::shared_ptr<api::GetTaskScheduleCfgListReq>& reqBody) {
+drogon::Task<async_flow::frmwork::Status> GetTaskScheduleCfgListHandler::HandleInput(std::shared_ptr<api::GetTaskScheduleCfgListReq>& reqBody) {
     co_return Status::OK;
 }
 
-Task<std::pair<api::GetTaskScheduleCfgListRsp, Status>> GetTaskScheduleCfgListHandler::HandleProcess(std::shared_ptr<api::GetTaskScheduleCfgListReq>& reqBody) {
+drogon::Task<std::pair<api::GetTaskScheduleCfgListRsp, Status>> GetTaskScheduleCfgListHandler::HandleProcess(std::shared_ptr<api::GetTaskScheduleCfgListReq>& reqBody) {
     ScheduleCfgDao posDao;
     auto [cfgList, status] = co_await posDao.GetListAsync();
     if (!status.ok()) co_return {{}, status};

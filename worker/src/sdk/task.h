@@ -42,7 +42,7 @@ private:
     drogon::Task<std::pair<RspBody, async_flow::frmwork::Status>> SendRequest(const std::string& url, const ReqBody& reqBody) {
         RspBody rspBody; // 默认构造
         std::string stReqBody;
-        if (!ProtobufUtil::MessageToJsonString(reqBody, &stReqBody).ok()) {
+        if (!google::protobuf::util::MessageToJsonString(reqBody, &stReqBody).ok()) {
             LOG_ERROR << "Protobuf serialization failed";
             co_return {rspBody, frmwork::Status::FAIL};
         }
@@ -62,7 +62,7 @@ private:
 
             auto bodyView = response->getBody();
             std::string bodyStr(bodyView.data(), bodyView.length());
-            if (!ProtobufUtil::JsonStringToMessage(bodyStr, &rspBody).ok()) {
+            if (!google::protobuf::util::JsonStringToMessage(bodyStr, &rspBody).ok()) {
                 LOG_ERROR << "JSON parsing failed. Body: " << bodyStr;
                 co_return {rspBody, frmwork::Status::FAIL};
             }

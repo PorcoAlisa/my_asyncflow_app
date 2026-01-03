@@ -10,7 +10,7 @@ namespace flowsvr {
 using namespace frmwork;
 using namespace db;
 
-Task<Status> CreateTaskHandler::HandleInput(std::shared_ptr<api::CreateTaskReq>& reqBody) {
+drogon::Task<Status> CreateTaskHandler::HandleInput(std::shared_ptr<api::CreateTaskReq>& reqBody) {
     if (reqBody->taskdata().task_type().empty()) {
         LOG_ERROR << "task type is empty";
         co_return Status::FAIL;
@@ -18,7 +18,7 @@ Task<Status> CreateTaskHandler::HandleInput(std::shared_ptr<api::CreateTaskReq>&
     co_return Status::OK;
 }
 
-Task<std::pair<api::CreateTaskRsp, Status>> CreateTaskHandler::HandleProcess(std::shared_ptr<api::CreateTaskReq>& reqBody) {
+drogon::Task<std::pair<api::CreateTaskRsp, Status>> CreateTaskHandler::HandleProcess(std::shared_ptr<api::CreateTaskReq>& reqBody) {
     TaskDao taskDao;
     SchedulePosDao posDao;
     ScheduleCfgDao cfgDao;

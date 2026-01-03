@@ -3,7 +3,6 @@
 #include <string>
 #include <string_view>
 #include "task.h"
-#include <thread>
 #include "api.pb.h"
 
 namespace async_flow {
