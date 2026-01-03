@@ -1,0 +1,8 @@
+{
+    "cmake.configureSettings": {
+        // 这是连接 vcpkg 的核心魔法
+        "CMAKE_TOOLCHAIN_FILE": "/home/porco/vcpkg/scripts/buildsystems/vcpkg.cmake"
+    },
+    // 强制使用 Ninja 生成器（如果你第一步装了 ninja-build）
+    "cmake.generator": "Ninja" 
+}
