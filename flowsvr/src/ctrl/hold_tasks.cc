@@ -3,8 +3,7 @@
 #include "task.h"
 #include "schedule_pos.h"
 
-namespace async_flow {
-namespace flowsvr {
+namespace async_flow::flowsvr {
 
 using namespace async_flow::frmwork;
 using namespace async_flow::db;
@@ -49,7 +48,7 @@ drogon::Task<std::pair<api::HoldTasksRsp, Status>> HoldTasksHandler::HandleProce
     api::HoldTasksRsp rspBody;
     std::vector<std::string> taskIDs;
     for (auto& task : vecTasks) {
-        if (task.getValueOfCrtRetryNum() != 0 && task.getValueOfMaxRetryInterval() != 0 
+        if (task.getValueOfCrtRetryNum() != 0 && task.getValueOfMaxRetryInterval() != 0
             && task.getValueOfOrderTime() > TimestampNow()) {
             continue;
         }
@@ -67,5 +66,4 @@ drogon::Task<std::pair<api::HoldTasksRsp, Status>> HoldTasksHandler::HandleProce
     co_return {rspBody, Status::OK};
 }
 
-} // flowsvr
-} // async_flow
+}

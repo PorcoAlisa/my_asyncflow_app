@@ -2,13 +2,12 @@
 #include "const.h"
 #include "schedule_cfg.h"
 
-namespace async_flow {
-namespace flowsvr {
+namespace async_flow::flowsvr {
 
 using namespace frmwork;
 using namespace db;
 
-drogon::Task<async_flow::frmwork::Status> GetTaskScheduleCfgListHandler::HandleInput(std::shared_ptr<api::GetTaskScheduleCfgListReq>& reqBody) {
+drogon::Task<Status> GetTaskScheduleCfgListHandler::HandleInput(std::shared_ptr<api::GetTaskScheduleCfgListReq>& reqBody) {
     co_return Status::OK;
 }
 
@@ -26,5 +25,4 @@ drogon::Task<std::pair<api::GetTaskScheduleCfgListRsp, Status>> GetTaskScheduleC
     co_return {std::move(rspBody), Status::OK};
 }
 
-}
 }

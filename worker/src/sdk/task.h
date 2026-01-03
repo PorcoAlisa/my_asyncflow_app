@@ -94,7 +94,7 @@ public:
     virtual drogon::Task<frmwork::Status> HandleProcess() { co_return frmwork::Status::OK; }
     virtual drogon::Task<frmwork::Status> HandleFailedMust() { co_return frmwork::Status::OK; }
     virtual drogon::Task<frmwork::Status> HandleFinishError() { co_return frmwork::Status::OK; }
-    virtual drogon::Task<void> HandleFinish() { co_return; }
+    virtual drogon::Task<> HandleFinish() { co_return; }
     virtual drogon::Task<frmwork::Status> SetTask();
     api::TaskData& TaskData() { return taskData_; }
 protected:
@@ -103,6 +103,6 @@ protected:
 };
 
 using TaskPtr = std::shared_ptr<TaskBase>;
-using TaskBaseFactory = std::function<TaskPtr(const api::TaskData&, std::string_view)>;
+using TaskBaseFactory = std::function<TaskPtr(api::TaskData, std::string_view)>;
 
 }

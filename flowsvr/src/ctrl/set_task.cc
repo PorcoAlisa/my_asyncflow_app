@@ -3,15 +3,14 @@
 #include "task.h"
 
 
-namespace async_flow {
-namespace flowsvr {
+namespace async_flow::flowsvr {
 
 using namespace frmwork;
 using namespace db;
 
 using TLarkTask1 = drogon_model::data0::TLarkTask1;
 
-drogon::Task<async_flow::frmwork::Status> SetTaskHandler::HandleInput(std::shared_ptr<api::SetTaskReq>& reqBody) {
+drogon::Task<Status> SetTaskHandler::HandleInput(std::shared_ptr<api::SetTaskReq>& reqBody) {
     if (reqBody->task_id().empty()) {
         LOG_ERROR << "task id is empty";
         co_return InputInvalid;
@@ -36,12 +35,10 @@ drogon::Task<std::pair<api::SetTaskRsp, Status>> SetTaskHandler::HandleProcess(s
     task.setOrderTime(reqBody->order_time());
 
     TaskDao taskDao;
-    Status status = co_await taskDao.SaveAsync(task);
-    if (!status.ok()) {
+    if (Status status = co_await taskDao.SaveAsync(task); !status.ok()) {
         co_return {{}, status};
     }
     co_return {{}, Status::OK};
 }
 
-} // flowsvr
-} // async_flow
+}

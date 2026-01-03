@@ -1,6 +1,5 @@
 #include "dao.h"
 #include "comm.h"
-#include <cstdio>
 
 
 std::string GetTaskTableName(const std::string& taskType) {

@@ -5,8 +5,7 @@
 #include "task.h"
 #include "api.pb.h"
 
-namespace async_flow {
-namespace worker {
+namespace async_flow::worker {
 
 class TaskMgr : public std::enable_shared_from_this<TaskMgr> {
 public:
@@ -14,15 +13,14 @@ public:
     void Init();
     void Schedule();
     drogon::Task<std::vector<TaskPtr>> Hold(const api::TaskScheduleCfg& cfg);
-    static drogon::Task<void> RunTask(const api::TaskScheduleCfg& cfg, const TaskPtr& taskPtr);
+    static drogon::Task<> RunTask(const api::TaskScheduleCfg& cfg, const TaskPtr& taskPtr);
 private:
     std::string taskType_;
     std::string taskSvrHost_;
     TaskBaseFactory factory_;
     std::mutex lock_;
     std::map<std::string, api::TaskScheduleCfg> cfgMap_;
-    drogon::Task<void> LoadCfgLoop();
+    drogon::Task<> LoadCfgLoop();
 };
 
-}
 }

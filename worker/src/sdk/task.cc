@@ -35,8 +35,7 @@ drogon::Task<frmwork::Status> TaskBase::SetTask() {
         LOG_ERROR << "TaskRpc plugin not found! Did you add it to config.json?";
         co_return frmwork::Status::FAIL;
     }
-    auto [rsp, status] = co_await taskRpc->SetTask(req);
-    if (!status.ok()) {
+    if (auto [rsp, status] = co_await taskRpc->SetTask(req); !status.ok()) {
         LOG_ERROR << "SetTask Failed";
         co_return frmwork::Status::FAIL;
     }

@@ -4,8 +4,7 @@
 #include "schedule_pos.h"
 #include "schedule_cfg.h"
 
-namespace async_flow {
-namespace flowsvr {
+namespace async_flow::flowsvr {
 
 using namespace frmwork;
 using namespace db;
@@ -40,13 +39,11 @@ drogon::Task<std::pair<api::CreateTaskRsp, Status>> CreateTaskHandler::HandlePro
     reqBody->mutable_taskdata()->set_order_time(TimestampNow());
 
     FillDBTaskModel(reqBody->taskdata(), task);
-    Status status3 = co_await taskDao.CreateAsync(taskType, schPosStr, task);
-    if (!status3.ok()) co_return {{}, status3};
+    if (Status status3 = co_await taskDao.CreateAsync(taskType, schPosStr, task); !status3.ok()) co_return {{}, status3};
 
     api::CreateTaskRsp rspBody;
     rspBody.set_task_id(task.getValueOfTaskId());
     co_return { std::move(rspBody), Status::OK};
 }
 
-} // flowsvr
-} // async_flow
+}

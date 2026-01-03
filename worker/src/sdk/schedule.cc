@@ -6,7 +6,7 @@ namespace async_flow::worker {
 
 using namespace frmwork;
 
-drogon::Task<void> TaskMgr::LoadCfgLoop() {
+drogon::Task<> TaskMgr::LoadCfgLoop() {
     auto* taskRpc = drogon::app().getPlugin<TaskRpc>();
     if (!taskRpc) {
         LOG_ERROR << "TaskRpc plugin not found! Did you add it to config.json?";
@@ -27,7 +27,7 @@ drogon::Task<void> TaskMgr::LoadCfgLoop() {
             newMap[rsp.task_schedule_cfg(i).task_type()] = rsp.task_schedule_cfg(i);
         }
         {
-            std::lock_guard<std::mutex> guard(lock_);
+            std::scoped_lock guard(lock_);
             cfgMap_ = newMap;
         }
         LOG_INFO << "update task schedule done";
@@ -52,9 +52,8 @@ void TaskMgr::Schedule() {
         drogon::async_run([self]() -> drogon::Task<void> {
             api::TaskScheduleCfg scheduleCfg;
             {
-                std::lock_guard<std::mutex> guard(self->lock_);
-                auto it = self->cfgMap_.find(self->taskType_);
-                if (it != self->cfgMap_.end()) {
+                std::scoped_lock guard(self->lock_);
+                if (auto it = self->cfgMap_.find(self->taskType_); it != self->cfgMap_.end()) {
                     scheduleCfg = it->second;
                 } else {
                     LOG_ERROR << "Task type " << self->taskType_ << " not found in cfgMap_";
@@ -74,9 +73,9 @@ void TaskMgr::Schedule() {
 
                 const TaskPtr& currentTask = tasks[i];
 
-                targetLoop->queueInLoop([self, currentTask, scheduleCfg]() {
-                    drogon::async_run([self, currentTask, scheduleCfg]() -> drogon::Task<void> {
-                        return self->RunTask(scheduleCfg, currentTask);
+                targetLoop->queueInLoop([currentTask, scheduleCfg]() {
+                    drogon::async_run([currentTask, scheduleCfg]() -> drogon::Task<void> {
+                        return RunTask(scheduleCfg, currentTask);
                     });
                 });
             }
@@ -84,7 +83,7 @@ void TaskMgr::Schedule() {
     });
 }
 
-drogon::Task<void> EndProcess(api::TaskData& taskData, const TaskPtr& taskPtr) {
+drogon::Task<> EndProcess(api::TaskData& taskData, const TaskPtr& taskPtr) {
     if (taskData.status() == TASK_FAILED) {
         Status status = co_await taskPtr->HandleFailedMust();
         if (!status.ok()) {
@@ -108,7 +107,7 @@ drogon::Task<void> EndProcess(api::TaskData& taskData, const TaskPtr& taskPtr) {
     co_await taskPtr->SetTask();
 }
 
-drogon::Task<void> TaskMgr::RunTask(const api::TaskScheduleCfg& cfg, const TaskPtr& taskPtr) {
+drogon::Task<> TaskMgr::RunTask(const api::TaskScheduleCfg& cfg, const TaskPtr& taskPtr) {
     api::TaskData& taskData = taskPtr->TaskData();
     Status status = co_await taskPtr->ContextLoad();
     if (!status.ok()) {

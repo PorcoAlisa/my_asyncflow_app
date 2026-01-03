@@ -3,8 +3,7 @@
 #include <drogon/drogon.h>
 #include <string>
 
-namespace async_flow {
-namespace db {
+namespace async_flow::db {
 
 class Dao {
 public:
@@ -16,7 +15,6 @@ protected:
     drogon::orm::DbClientPtr clientPtr_;
 };
 
-} // namespace db
-} // namespace async_flow
+}
 
 std::string GetTaskTableName(const std::string& taskType);

@@ -1,15 +1,12 @@
 #include "schedule_pos.h"
 #include "const.h"
 
-namespace async_flow {
-namespace db {
+namespace async_flow::db {
 
-using namespace async_flow::frmwork;
+using namespace frmwork;
 using namespace drogon::orm;
 
-using TSchedulePos = drogon_model::data0::TSchedulePos;
-
-Status SchedulePosDao::Create(TSchedulePos& pos) {
+Status SchedulePosDao::Create(TSchedulePos& pos) const {
     try {
         Mapper<TSchedulePos> mp(clientPtr_);
         mp.insert(pos);
@@ -20,7 +17,7 @@ Status SchedulePosDao::Create(TSchedulePos& pos) {
     return Status::OK;
 }
 
-Status SchedulePosDao::Save(TSchedulePos& pos) {
+Status SchedulePosDao::Save(TSchedulePos& pos) const {
     try {
         Mapper<TSchedulePos> mp(clientPtr_);
         mp.update(pos);
@@ -31,7 +28,7 @@ Status SchedulePosDao::Save(TSchedulePos& pos) {
     return Status::OK;
 }
 
-drogon::Task<std::pair<TSchedulePos, Status>> SchedulePosDao::GetAsync(const std::string& taskSetName) {
+drogon::Task<std::pair<TSchedulePos, Status>> SchedulePosDao::GetAsync(const std::string& taskSetName) const {
     try {
         CoroMapper<TSchedulePos> mp(clientPtr_);
         auto tasks = co_await mp.limit(1).findBy(Criteria(TSchedulePos::Cols::_task_type, CompareOperator::EQ, taskSetName));
@@ -46,7 +43,7 @@ drogon::Task<std::pair<TSchedulePos, Status>> SchedulePosDao::GetAsync(const std
     }
 }
 
-drogon::Task<Status> SchedulePosDao::GetRandomSchedulePosAsync(const std::string& taskSetName, int& pos) {
+drogon::Task<Status> SchedulePosDao::GetRandomSchedulePosAsync(const std::string& taskSetName, int& pos) const {
     auto [taskPos, status] = co_await GetAsync(taskSetName);
     if (!status.ok()) {
         co_return status;
@@ -56,7 +53,7 @@ drogon::Task<Status> SchedulePosDao::GetRandomSchedulePosAsync(const std::string
     co_return Status::OK;
 }
 
-drogon::Task<Status> SchedulePosDao::GetBeginSchedulePosAsync(const std::string& taskSetName, int& pos) {
+drogon::Task<Status> SchedulePosDao::GetBeginSchedulePosAsync(const std::string& taskSetName, int& pos) const {
     auto [taskPos, status] = co_await GetAsync(taskSetName);
     if (!status.ok()) {
         co_return status;
@@ -71,7 +68,7 @@ Status SchedulePosDao::GetNextPos(const std::string& pos, std::string& nextPos) 
     return Status::OK;
 }
 
-Status SchedulePosDao::GetPosList(std::vector<TSchedulePos>& vec) {
+Status SchedulePosDao::GetPosList(std::vector<TSchedulePos>& vec) const {
     try {
         Mapper<TSchedulePos> mp(clientPtr_);
         vec = mp.findAll();
@@ -81,5 +78,4 @@ Status SchedulePosDao::GetPosList(std::vector<TSchedulePos>& vec) {
     return Status::OK;
 }
 
-} // namespace db
-} // namespace async_flow
+}

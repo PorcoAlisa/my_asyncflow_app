@@ -1,18 +1,14 @@
 #include "schedule_cfg.h"
 #include "const.h"
 
-namespace async_flow {
-namespace db {
+namespace async_flow::db {
 
 using namespace frmwork;
 using namespace drogon::orm;
 
-using TScheduleCfg = drogon_model::data0::TScheduleCfg;
-// using Status = async_flow::frmwork::Status;
-
-Status ScheduleCfgDao::Create(TScheduleCfg& cfg) {
+Status ScheduleCfgDao::Create(drogon_model::data0::TScheduleCfg& cfg) const {
     try {
-        Mapper<TScheduleCfg> mp(clientPtr_);
+        Mapper<drogon_model::data0::TScheduleCfg> mp(clientPtr_);
         mp.insert(cfg);
     } catch (const DrogonDbException& e) {
         LOG_FATAL << "error: " << e.base().what();
@@ -21,9 +17,9 @@ Status ScheduleCfgDao::Create(TScheduleCfg& cfg) {
     return Status::OK;
 }
 
-Status ScheduleCfgDao::Save(TScheduleCfg& cfg) {
+Status ScheduleCfgDao::Save(const drogon_model::data0::TScheduleCfg& cfg) const {
     try {
-        Mapper<TScheduleCfg> mp(clientPtr_);
+        Mapper<drogon_model::data0::TScheduleCfg> mp(clientPtr_);
         mp.update(cfg);
     } catch (const DrogonDbException& e) {
         LOG_FATAL << "error: " << e.base().what();
@@ -32,11 +28,10 @@ Status ScheduleCfgDao::Save(TScheduleCfg& cfg) {
     return Status::OK;
 }
 
-drogon::Task<std::pair<TScheduleCfg, Status>> ScheduleCfgDao::GetAsync(const std::string& taskType) {
+drogon::Task<std::pair<drogon_model::data0::TScheduleCfg, Status>> ScheduleCfgDao::GetAsync(const std::string& taskType) const {
     try {
-        CoroMapper<TScheduleCfg> mp(clientPtr_);
-        auto tasks = co_await mp.limit(1).findBy(Criteria(TScheduleCfg::Cols::_task_type, CompareOperator::EQ, taskType));
-        if (tasks.empty()) {
+        CoroMapper<drogon_model::data0::TScheduleCfg> mp(clientPtr_);
+        if (auto tasks = co_await mp.limit(1).findBy(Criteria(drogon_model::data0::TScheduleCfg::Cols::_task_type, CompareOperator::EQ, taskType)); tasks.empty()) {
             LOG_FATAL << "error tasks size = 0";
             co_return {{}, ResourceNotFound};
         } else {
@@ -48,10 +43,10 @@ drogon::Task<std::pair<TScheduleCfg, Status>> ScheduleCfgDao::GetAsync(const std
     }
 }
 
-drogon::Task<std::pair<std::vector<TScheduleCfg>, Status>> ScheduleCfgDao::GetListAsync() {
+drogon::Task<std::pair<std::vector<drogon_model::data0::TScheduleCfg>, Status>> ScheduleCfgDao::GetListAsync() const {
     try {
-        CoroMapper<TScheduleCfg> mp(clientPtr_);
-        std::vector<TScheduleCfg> cfgs = co_await mp.findAll();
+        CoroMapper<drogon_model::data0::TScheduleCfg> mp(clientPtr_);
+        std::vector<drogon_model::data0::TScheduleCfg> cfgs = co_await mp.findAll();
         co_return {std::move(cfgs), Status::OK};
     } catch (const DrogonDbException& e) {
         LOG_FATAL << "error: " << e.base().what();
@@ -59,6 +54,4 @@ drogon::Task<std::pair<std::vector<TScheduleCfg>, Status>> ScheduleCfgDao::GetLi
     }
 }
 
-
-} // namespace db
-} // namespace async_flow
+}
