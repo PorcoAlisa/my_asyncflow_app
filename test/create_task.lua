@@ -1,4 +1,4 @@
--- post_test.lua
+-- create_task.lua
 
 wrk.method = "POST"
 
