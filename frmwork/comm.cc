@@ -48,6 +48,11 @@ std::string StringJoin(const std::vector<std::string>& v, const char c) {
 }
 
 std::string generate_uuid_v4() {
+    thread_local std::random_device rd;
+    thread_local std::mt19937 gen(rd());
+    thread_local std::uniform_int_distribution<> dis(0, 15);
+    thread_local std::uniform_int_distribution<> dis2(8, 11);
+
     std::stringstream ss;
     int i;
     ss << std::hex;
