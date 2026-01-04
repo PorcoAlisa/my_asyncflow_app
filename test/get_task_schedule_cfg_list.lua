@@ -1,3 +1,3 @@
 wrk.method = "POST"
 
-wrk.body = {}
+wrk.body = [[{}]]
