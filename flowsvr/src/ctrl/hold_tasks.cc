@@ -35,7 +35,11 @@ drogon::Task<std::pair<api::HoldTasksRsp, Status>> HoldTasksHandler::HandleProce
         co_return {{}, Status::FAIL};
     }
 
-    auto dbClient = drogon::app().getDbClient();
+    auto dbClient = drogon::app().getDbClient("porcodb");
+    if (!dbClient) {
+        LOG_ERROR << "dbClient 'porcodb' not found!";
+        co_return {{}, Status::FAIL};
+    }
     std::shared_ptr<drogon::orm::Transaction> transPtr;
     try {
         transPtr = co_await dbClient->newTransactionCoro();
