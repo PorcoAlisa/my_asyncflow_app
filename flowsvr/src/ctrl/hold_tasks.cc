@@ -49,7 +49,6 @@ drogon::Task<std::pair<api::HoldTasksRsp, Status>> HoldTasksHandler::HandleProce
     }
 
     std::string beginSchPos = std::to_string(schPos.getValueOfScheduleBeginPos());
-    std::string tableName = taskTableName + "_" + beginSchPos;
     auto [vecTasks, status1] = co_await TaskDao::GetTaskListWithTxAsync(transPtr, taskType, TASK_PENDING, beginSchPos, limit);
     if (!status1.ok()) { co_return {{}, status1}; }
 
@@ -61,7 +60,7 @@ drogon::Task<std::pair<api::HoldTasksRsp, Status>> HoldTasksHandler::HandleProce
         FillPBTaskModel(task, *taskData);
     }
 
-    status = co_await TaskDao::BatchSetStatusWithTxAsync(transPtr, ids, TASK_PROCESSING, taskTableName);
+    status = co_await TaskDao::BatchSetStatusWithTxAsync(transPtr, ids, TASK_PROCESSING, taskTableName + "_" + beginSchPos);
     if (!status.ok()) {
         LOG_INFO << "BatchSetStatus: " << status.error_code();
         co_return {rspBody, status};
