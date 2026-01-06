@@ -24,13 +24,9 @@ drogon::Task<std::pair<api::HoldTasksRsp, Status>> HoldTasksHandler::HandleProce
     SchedulePosDao posDao;
 
     int limit = reqBody->limit();
-    if (limit > MAX_TASK_LIST_LIMIT) {
-        limit = MAX_TASK_LIST_LIMIT;
-    }
+    if (limit > MAX_TASK_LIST_LIMIT) limit = MAX_TASK_LIST_LIMIT;
+    if (limit == 0) limit = DEFAULT_TASK_LIST_LIMIT;
 
-    if (limit == 0) {
-        limit = DEFAULT_TASK_LIST_LIMIT;
-    }
     std::string taskType = reqBody->task_type();
     std::string taskTableName = GetTaskTableName(taskType);
 
@@ -38,12 +34,19 @@ drogon::Task<std::pair<api::HoldTasksRsp, Status>> HoldTasksHandler::HandleProce
     if (!status.ok()) {
         co_return {{}, Status::FAIL};
     }
-    std::string beginSchPos = std::to_string(schPos.getValueOfScheduleBeginPos());
-    std::vector<drogon_model::data0::TLarkTask1> vecTasks;
-    status = co_await taskDao.GetTaskListAsync(taskType, beginSchPos, TASK_PENDING, limit, vecTasks);
-    if (!status.ok()) {
+
+    auto dbClient = drogon::app().getDbClient();
+    std::shared_ptr<drogon::orm::Transaction> transPtr;
+    try {
+        transPtr = co_await dbClient->newTransactionCoro();
+    } catch (const std::exception& e) {
+        LOG_ERROR << "Failed to begin transaction: " << e.what();
         co_return {{}, Status::FAIL};
     }
+
+    std::string beginSchPos = std::to_string(schPos.getValueOfScheduleBeginPos());
+    auto [vecTasks, status1] = co_await TaskDao::GetTaskListWithTxAsync(transPtr, taskType, TASK_PENDING, beginSchPos, limit);
+    if (!status1.ok()) { co_return {{}, status1}; }
 
     api::HoldTasksRsp rspBody;
     std::vector<std::string> taskIDs;
@@ -57,7 +60,7 @@ drogon::Task<std::pair<api::HoldTasksRsp, Status>> HoldTasksHandler::HandleProce
         FillPBTaskModel(task, *taskData);
     }
 
-    status = co_await taskDao.BatchSetStatusAsync(taskIDs, TASK_PROCESSING);
+    status = co_await TaskDao::BatchSetStatusWithTxAsync(transPtr, taskIDs, TASK_PROCESSING);
     if (!status.ok()) {
         LOG_INFO << "BatchSetStatus: " << status.error_code();
         co_return {rspBody, status};

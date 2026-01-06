@@ -52,23 +52,6 @@ drogon::Task<Status> TaskDao::CreateAsync(const std::string& taskType, const std
     }
 }
 
-void row2Task(drogon_model::data0::TLarkTask1& task, const drogon::orm::Row& r) {
-    task.setId(r["id"].as<int32_t>());
-    task.setUserId(r["user_id"].as<std::string>());
-    task.setTaskId(r["task_id"].as<std::string>());
-    task.setTaskType(r["task_type"].as<std::string>());
-    task.setTaskStage(r["task_stage"].as<std::string>());
-    task.setStatus(r["status"].as<uint8_t>());
-    task.setPriority(r["priority"].as<int32_t>());
-    task.setCrtRetryNum(r["crt_retry_num"].as<int32_t>());
-    task.setMaxRetryNum(r["max_retry_num"].as<int32_t>());
-    task.setMaxRetryInterval(r["max_retry_interval"].as<int32_t>());
-    task.setScheduleLog(r["schedule_log"].as<std::string>());
-    task.setTaskContext(r["task_context"].as<std::string>());
-    task.setOrderTime(r["order_time"].as<int32_t>());
-    task.setCreateTime(trantor::Date::fromDbStringLocal(r["create_time"].as<std::string>()));
-    task.setModifyTime(trantor::Date::fromDbStringLocal(r["modify_time"].as<std::string>()));
-}
 
 drogon::Task<Status> TaskDao::GetTaskListAsync(const std::string& taskType, const std::string& pos, const TaskStatus& status, int limit, std::vector<drogon_model::data0::TLarkTask1>& tasklist) const {
     std::string tableName = GetTableName(taskType, pos);
@@ -81,8 +64,7 @@ drogon::Task<Status> TaskDao::GetTaskListAsync(const std::string& taskType, cons
         LOG_INFO << "task list size: " << result.size();
         tasklist.reserve(result.size());
         for (const auto& row : result) {
-            tasklist.emplace_back();
-            row2Task(tasklist.back(), row);
+            tasklist.emplace_back(row);
         }
     } catch (const drogon::orm::DrogonDbException& e) {
         LOG_ERROR << "error:" << e.base().what();
@@ -131,6 +113,63 @@ drogon::Task<Status> TaskDao::SaveAsync(const drogon_model::data0::TLarkTask1& t
         LOG_INFO << "update task " << result.size() << " rows affected";
     } catch (const drogon::orm::DrogonDbException& e) {
         LOG_FATAL << "error:" << e.base().what();
+        co_return DBExecErr;
+    }
+    co_return Status::OK;
+}
+
+drogon::Task<std::pair<std::vector<drogon_model::data0::TLarkTask1>, Status>>
+TaskDao::GetTaskListWithTxAsync(const std::shared_ptr<drogon::orm::DbClient>& clientPtr,
+    const std::string& taskType, const TaskStatus& status, const std::string& pos, int limit)
+{
+    std::string tableName = GetTableName(taskType, pos);
+    std::string sql = std::format(R"(
+        SELECT * FROM {}
+        WHERE task_type = ?
+          AND status = ?
+          AND (crt_retry_num = 0 OR max_retry_interval = 0 OR order_time <= ?)
+        ORDER BY order_time DESC
+        LIMIT ?
+        FOR UPDATE SKIP LOCKED
+    )", tableName);
+
+    std::vector<drogon_model::data0::TLarkTask1> tasklist;
+    try {
+        auto result = co_await clientPtr->execSqlCoro(sql, taskType, status, TimestampNow(), limit);
+        if (result.empty()) co_return {{}, ResourceNotFound};
+
+        LOG_INFO << "Fetched & Locked tasks size: " << result.size();
+        tasklist.reserve(result.size());
+        for (const auto& row : result) {
+            tasklist.emplace_back(row);
+        }
+    } catch (const drogon::orm::DrogonDbException& e) {
+        LOG_ERROR << "FetchAndLock Error: " << e.base().what();
+        co_return {{}, DBExecErr};
+    }
+    co_return {tasklist, Status::OK};
+}
+
+drogon::Task<Status> TaskDao::BatchSetStatusWithTxAsync(const std::shared_ptr<drogon::orm::DbClient>& clientPtr,
+        const std::vector<std::string>& taskIDs, int newStatus)
+{
+    if (taskIDs.empty()) co_return Status::OK;
+    auto [taskType, pos] = GetTablePosFromTaskID(taskIDs[0]);
+    std::string tableName = GetTableName(taskType, pos);
+
+    std::string taskInCond;
+    taskInCond.reserve(taskIDs.size() * 35);
+    for (size_t i = 0; i < taskIDs.size(); ++i) {
+        taskInCond += "'";
+        taskInCond += taskIDs[i];
+        taskInCond += "'";
+
+        if (i < taskIDs.size() - 1) taskInCond += ",";
+    }
+    try {
+        std::string sql = std::format("UPDATE {} SET status = ? WHERE task_id IN ({})", tableName, taskInCond);
+        auto result = co_await clientPtr->execSqlCoro(sql, newStatus);
+    } catch (const drogon::orm::DrogonDbException& e) {
         co_return DBExecErr;
     }
     co_return Status::OK;
