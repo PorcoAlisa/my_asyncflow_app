@@ -151,23 +151,18 @@ TaskDao::GetTaskListWithTxAsync(const std::shared_ptr<drogon::orm::DbClient>& cl
 }
 
 drogon::Task<Status> TaskDao::BatchSetStatusWithTxAsync(const std::shared_ptr<drogon::orm::DbClient>& clientPtr,
-        const std::vector<std::string>& taskIDs, int newStatus)
+        const std::vector<int32_t>& ids, int newStatus, std::string_view tableName)
 {
-    if (taskIDs.empty()) co_return Status::OK;
-    auto [taskType, pos] = GetTablePosFromTaskID(taskIDs[0]);
-    std::string tableName = GetTableName(taskType, pos);
+    if (ids.empty()) co_return Status::OK;
 
-    std::string taskInCond;
-    taskInCond.reserve(taskIDs.size() * 35);
-    for (size_t i = 0; i < taskIDs.size(); ++i) {
-        taskInCond += "'";
-        taskInCond += taskIDs[i];
-        taskInCond += "'";
-
-        if (i < taskIDs.size() - 1) taskInCond += ",";
+    std::string idInCond;
+    idInCond.reserve(ids.size() * 10);
+    for (size_t i = 0; i < ids.size(); ++i) {
+        idInCond += std::to_string(ids[i]);
+        if (i < ids.size() - 1) idInCond += ",";
     }
     try {
-        std::string sql = std::format("UPDATE {} SET status = ? WHERE task_id IN ({})", tableName, taskInCond);
+        std::string sql = std::format("UPDATE {} SET status = ? WHERE id IN ({})", tableName, idInCond);
         auto result = co_await clientPtr->execSqlCoro(sql, newStatus);
     } catch (const drogon::orm::DrogonDbException& e) {
         co_return DBExecErr;

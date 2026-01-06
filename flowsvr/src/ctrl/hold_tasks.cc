@@ -53,14 +53,14 @@ drogon::Task<std::pair<api::HoldTasksRsp, Status>> HoldTasksHandler::HandleProce
     if (!status1.ok()) { co_return {{}, status1}; }
 
     api::HoldTasksRsp rspBody;
-    std::vector<std::string> taskIDs;
+    std::vector<std::int32_t> ids;
     for (auto& task : vecTasks) {
-        taskIDs.push_back(task.getValueOfTaskId());
+        ids.push_back(task.getValueOfId());
         api::TaskData* taskData = rspBody.add_task_list();
         FillPBTaskModel(task, *taskData);
     }
 
-    status = co_await TaskDao::BatchSetStatusWithTxAsync(transPtr, taskIDs, TASK_PROCESSING);
+    status = co_await TaskDao::BatchSetStatusWithTxAsync(transPtr, ids, TASK_PROCESSING, taskTableName);
     if (!status.ok()) {
         LOG_INFO << "BatchSetStatus: " << status.error_code();
         co_return {rspBody, status};

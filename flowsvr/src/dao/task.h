@@ -25,9 +25,8 @@ public:
     static Task<std::pair<std::vector<TLarkTask1>, Status>> GetTaskListWithTxAsync(
         const std::shared_ptr<DbClient>& clientPtr, const std::string& taskType, const frmwork::TaskStatus& status,
         const std::string& pos, int limit);
-    static Task<Status> BatchSetStatusWithTxAsync(
-        const std::shared_ptr<DbClient>& clientPtr, const std::vector<std::string>& taskIDs,
-        int newStatus);
+    static Task<Status> BatchSetStatusWithTxAsync(const std::shared_ptr<DbClient>& clientPtr,
+        const std::vector<int32_t>& taskIDs, int newStatus, std::string_view tableName);
 };
 
 }
