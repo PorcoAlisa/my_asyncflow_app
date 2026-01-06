@@ -49,6 +49,7 @@ drogon::Task<std::pair<api::HoldTasksRsp, Status>> HoldTasksHandler::HandleProce
     }
 
     std::string beginSchPos = std::to_string(schPos.getValueOfScheduleBeginPos());
+    std::string tableName = taskTableName + "_" + beginSchPos;
     auto [vecTasks, status1] = co_await TaskDao::GetTaskListWithTxAsync(transPtr, taskType, TASK_PENDING, beginSchPos, limit);
     if (!status1.ok()) { co_return {{}, status1}; }
 

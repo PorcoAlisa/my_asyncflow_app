@@ -26,7 +26,7 @@ public:
         const std::shared_ptr<DbClient>& clientPtr, const std::string& taskType, const frmwork::TaskStatus& status,
         const std::string& pos, int limit);
     static Task<Status> BatchSetStatusWithTxAsync(const std::shared_ptr<DbClient>& clientPtr,
-        const std::vector<int32_t>& taskIDs, int newStatus, std::string_view tableName);
+        const std::vector<int32_t>& ids, int newStatus, std::string_view tableName);
 };
 
 }
