@@ -1,0 +1,9 @@
+{
+  "output": {
+    "filePath": "output.md"
+  },
+  "include": [
+    "flowsvr/**",
+    "frmwork/**"
+  ]
+}

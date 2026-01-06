@@ -51,10 +51,6 @@ drogon::Task<std::pair<api::HoldTasksRsp, Status>> HoldTasksHandler::HandleProce
     api::HoldTasksRsp rspBody;
     std::vector<std::string> taskIDs;
     for (auto& task : vecTasks) {
-        if (task.getValueOfCrtRetryNum() != 0 && task.getValueOfMaxRetryInterval() != 0
-            && task.getValueOfOrderTime() > TimestampNow()) {
-            continue;
-        }
         taskIDs.push_back(task.getValueOfTaskId());
         api::TaskData* taskData = rspBody.add_task_list();
         FillPBTaskModel(task, *taskData);
