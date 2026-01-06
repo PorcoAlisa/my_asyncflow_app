@@ -66,6 +66,13 @@ drogon::Task<std::pair<api::HoldTasksRsp, Status>> HoldTasksHandler::HandleProce
         co_return {rspBody, status};
     }
 
+    try {
+        co_await transPtr->execSqlCoro("COMMIT");
+    } catch (const std::exception& e) {
+        LOG_ERROR << "Transaction commit failed: " << e.what();
+        co_return {{}, Status::FAIL};
+    }
+
     co_return {rspBody, Status::OK};
 }
 
