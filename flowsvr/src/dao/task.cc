@@ -125,9 +125,8 @@ TaskDao::GetTaskListWithTxAsync(const std::shared_ptr<drogon::orm::DbClient>& cl
     std::string tableName = GetTableName(taskType, pos);
     std::string sql = std::format(R"(
         SELECT * FROM {}
-        WHERE task_type = ?
-          AND status = ?
-          AND (crt_retry_num = 0 OR max_retry_interval = 0 OR order_time <= ?)
+        WHERE status = ?
+          AND order_time <= ?
         ORDER BY order_time DESC
         LIMIT ?
         FOR UPDATE SKIP LOCKED
@@ -135,7 +134,7 @@ TaskDao::GetTaskListWithTxAsync(const std::shared_ptr<drogon::orm::DbClient>& cl
 
     std::vector<drogon_model::data0::TLarkTask1> tasklist;
     try {
-        auto result = co_await clientPtr->execSqlCoro(sql, taskType, status, TimestampNow(), limit);
+        auto result = co_await clientPtr->execSqlCoro(sql, status, TimestampNow(), limit);
         if (result.empty()) co_return {{}, ResourceNotFound};
 
         LOG_INFO << "Fetched & Locked tasks size: " << result.size();
