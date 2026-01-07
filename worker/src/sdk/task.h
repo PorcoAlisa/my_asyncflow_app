@@ -5,7 +5,6 @@
 #include "comm.h"
 #include <functional>
 #include <drogon/drogon.h>
-#include <ctime>
 
 namespace async_flow::worker {
 
@@ -17,7 +16,6 @@ public:
     drogon::Task<std::pair<api::CreateTaskRsp, frmwork::Status>> CreateTask(const api::CreateTaskReq& req);
 private:
     void initAndStart(const Json::Value &config) override {
-        std::srand(static_cast<unsigned int>(std::time(nullptr)));
         host_ = config.get("host", "http://127.0.0.1:39002").asString();
         size_t threadNum = drogon::app().getThreadNum();
         LOG_INFO << "Init and Start: threadNum: " << threadNum;
@@ -76,8 +74,9 @@ private:
 private:
     drogon::HttpClientPtr getRandomClient() {
         if (clients_.empty()) return nullptr;
-        size_t idx = std::rand() % clients_.size();
-        return clients_[idx];
+        thread_local std::mt19937 gen(std::random_device{}());
+        std::uniform_int_distribution<size_t> dis(0, clients_.size() - 1);
+        return clients_[dis(gen)];
     }
 
 private:

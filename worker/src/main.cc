@@ -1,5 +1,6 @@
 #include "schedule.h"
 #include "task.h"
+#include "lark.h"
 
 using namespace async_flow::worker;
 
@@ -13,7 +14,7 @@ int main() {
         taskType = config["app_settings"].get("type", taskType).asString();
         taskHost = config["app_settings"].get("host", taskHost).asString();
     }
-    auto mgr = std::make_shared<TaskMgr>(taskType, taskHost);
+    auto mgr = std::make_shared<TaskMgr>(taskType, taskHost, Lark::CreateLark);
 
     mgr->Init();
 

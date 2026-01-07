@@ -9,11 +9,12 @@ namespace async_flow::worker {
 
 class TaskMgr : public std::enable_shared_from_this<TaskMgr> {
 public:
-    TaskMgr(std::string_view taskType, std::string_view host) : taskType_(taskType), taskSvrHost_(host) {}
+    TaskMgr(std::string_view taskType, std::string_view host, TaskBaseFactory factory) :
+        taskType_(taskType), taskSvrHost_(host), factory_(std::move(factory)) {}
     void Init();
     drogon::Task<> Schedule();
     drogon::Task<std::vector<TaskPtr>> Hold(const api::TaskScheduleCfg& cfg);
-    static drogon::Task<> RunTask(const api::TaskScheduleCfg& cfg, const TaskPtr& taskPtr);
+    static drogon::Task<> RunTask(api::TaskScheduleCfg cfg, TaskPtr taskPtr);
 private:
     std::string taskType_;
     std::string taskSvrHost_;

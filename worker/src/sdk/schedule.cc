@@ -114,7 +114,7 @@ drogon::Task<> EndProcess(api::TaskData& taskData, const TaskPtr& taskPtr) {
     co_return;
 }
 
-drogon::Task<> TaskMgr::RunTask(const api::TaskScheduleCfg& cfg, const TaskPtr& taskPtr) {
+drogon::Task<> TaskMgr::RunTask(api::TaskScheduleCfg cfg, TaskPtr taskPtr) {
     api::TaskData& taskData = taskPtr->TaskData();
     Status status = co_await taskPtr->ContextLoad();
     if (!status.ok()) {
@@ -133,6 +133,7 @@ drogon::Task<> TaskMgr::RunTask(const api::TaskScheduleCfg& cfg, const TaskPtr& 
         if (taskData.max_retry_num() == 0 || taskData.crt_retry_num() >= taskData.max_retry_num()) {
             taskData.set_status(TASK_FAILED);
             co_await EndProcess(taskData, taskPtr);
+            co_return;
         }
         if (taskData.status() != TASK_FAILED) {
             taskData.set_crt_retry_num(taskData.crt_retry_num() + 1);

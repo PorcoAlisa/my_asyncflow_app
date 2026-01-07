@@ -3,7 +3,8 @@
     "filePath": "output.md"
   },
   "include": [
-    "flowsvr/**",
-    "frmwork/**"
+    "worker/**",
+    "frmwork/**",
+    "sql/**"
   ]
 }
