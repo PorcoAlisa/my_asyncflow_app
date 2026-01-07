@@ -4,5 +4,5 @@ wrk.method = "POST"
 
 wrk.body = [[{
   "taskType": "lark",
-  "limit": 0
+  "limit": 1
 }]]
