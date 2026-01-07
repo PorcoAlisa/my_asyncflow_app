@@ -39,48 +39,55 @@ void TaskMgr::Init() {
     LOG_INFO << "TaskMgr Init";
 
     auto self = shared_from_this();
-    drogon::app().registerBeginningAdvice([self]() {
+    drogon::app().registerBeginningAdvice([self] {
         LOG_INFO << "App running, now starting LoadCfgLoop...";
-        drogon::async_run([self]() -> drogon::Task<void> { return self->LoadCfgLoop(); });
+        drogon::async_run([self]() -> drogon::Task<> { return self->LoadCfgLoop(); });
+    });
+    drogon::app().registerBeginningAdvice([self] {
+        LOG_INFO << "begin to Schedule";
+        drogon::async_run([self]() -> drogon::Task<> { return self->Schedule(); });
     });
 }
 
-void TaskMgr::Schedule() {
-    LOG_INFO << "begin to Schedule";
-    auto self = shared_from_this();
-    drogon::app().registerBeginningAdvice([self]() {
-        drogon::async_run([self]() -> drogon::Task<void> {
-            api::TaskScheduleCfg scheduleCfg;
-            {
-                std::scoped_lock guard(self->lock_);
-                if (auto it = self->cfgMap_.find(self->taskType_); it != self->cfgMap_.end()) {
-                    scheduleCfg = it->second;
-                } else {
-                    LOG_ERROR << "Task type " << self->taskType_ << " not found in cfgMap_";
-                    co_return;
-                }
+drogon::Task<> TaskMgr::Schedule() {
+    while (true) {
+        api::TaskScheduleCfg scheduleCfg;
+        bool cfgReady = false;
+        {
+            std::scoped_lock guard(lock_);
+            if (auto it = cfgMap_.find(taskType_); it != cfgMap_.end()) {
+                scheduleCfg = it->second;
+                cfgReady = true;
             }
-            std::vector<TaskPtr> tasks = co_await self->Hold(scheduleCfg);
+        }
 
-            size_t numLoops = drogon::app().getThreadNum();
-            if (numLoops == 0) numLoops = 1;
+        if (!cfgReady) {
+            LOG_INFO << "Task type " << taskType_ << " config not ready, waiting...";
+            co_await drogon::sleepCoro(trantor::EventLoop::getEventLoopOfCurrentThread(), 1.0);
+            continue;
+        }
 
-            LOG_INFO << "Dispatching " << tasks.size() << " tasks to " << numLoops << " threads.";
+        std::vector<TaskPtr> tasks = co_await Hold(scheduleCfg);
 
-            for (size_t i = 0; i < tasks.size(); ++i) {
-                trantor::EventLoop* targetLoop = drogon::app().getIOLoop(i % numLoops);
-                if (!targetLoop) targetLoop = drogon::app().getLoop();
+        size_t numLoops = drogon::app().getThreadNum();
+        if (numLoops == 0) numLoops = 1;
 
-                const TaskPtr& currentTask = tasks[i];
+        LOG_INFO << "Dispatching " << tasks.size() << " tasks to " << numLoops << " threads.";
 
-                targetLoop->queueInLoop([currentTask, scheduleCfg]() {
-                    drogon::async_run([currentTask, scheduleCfg]() -> drogon::Task<void> {
-                        return RunTask(scheduleCfg, currentTask);
-                    });
+        for (size_t i = 0; i < tasks.size(); ++i) {
+            trantor::EventLoop* targetLoop = drogon::app().getIOLoop(i % numLoops);
+            if (!targetLoop) targetLoop = drogon::app().getLoop();
+
+            const TaskPtr& currentTask = tasks[i];
+
+            targetLoop->queueInLoop([currentTask, scheduleCfg] {
+                drogon::async_run([currentTask, scheduleCfg]() -> drogon::Task<> {
+                    return RunTask(scheduleCfg, currentTask);
                 });
-            }
-        });
-    });
+            });
+        }
+        co_await drogon::sleepCoro(trantor::EventLoop::getEventLoopOfCurrentThread(), 3.0);
+    }
 }
 
 drogon::Task<> EndProcess(api::TaskData& taskData, const TaskPtr& taskPtr) {
