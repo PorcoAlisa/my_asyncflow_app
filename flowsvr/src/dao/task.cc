@@ -110,7 +110,7 @@ drogon::Task<Status> TaskDao::SaveAsync(const drogon_model::data0::TLarkTask1& t
             task.getValueOfPriority(), task.getValueOfCrtRetryNum(), task.getValueOfMaxRetryNum(), task.getValueOfMaxRetryInterval(),
             task.getValueOfScheduleLog(), task.getValueOfTaskContext(), task.getValueOfOrderTime(), task.getValueOfTaskId()
         );
-        LOG_INFO << "update task " << result.size() << " rows affected";
+        LOG_INFO << "update task " << result.affectedRows() << " rows affected";
     } catch (const drogon::orm::DrogonDbException& e) {
         LOG_FATAL << "error:" << e.base().what();
         co_return DBExecErr;
