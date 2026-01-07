@@ -86,7 +86,7 @@ drogon::Task<> TaskMgr::Schedule() {
                 });
             });
         }
-        co_await drogon::sleepCoro(trantor::EventLoop::getEventLoopOfCurrentThread(), 3.0);
+        co_await drogon::sleepCoro(trantor::EventLoop::getEventLoopOfCurrentThread(), scheduleCfg.schedule_interval());
     }
 }
 
@@ -111,7 +111,7 @@ drogon::Task<> EndProcess(api::TaskData& taskData, const TaskPtr& taskPtr) {
     if (const Status status = co_await taskPtr->SetTask(); !status.ok()) {
         co_await taskPtr->HandleFinish();
     }
-    co_await taskPtr->SetTask();
+    co_return;
 }
 
 drogon::Task<> TaskMgr::RunTask(const api::TaskScheduleCfg& cfg, const TaskPtr& taskPtr) {
