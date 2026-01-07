@@ -120,6 +120,7 @@ drogon::Task<> TaskMgr::RunTask(api::TaskScheduleCfg cfg, TaskPtr taskPtr) {
     if (!status.ok()) {
         LOG_ERROR << "context load error " << status.error_code();
         co_await EndProcess(taskData, taskPtr);
+        co_return;
     }
     status = co_await taskPtr->HandleProcess();
 
